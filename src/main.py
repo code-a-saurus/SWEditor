@@ -123,6 +123,49 @@ def initialize_save_data() -> dict:
     
     return save_data
 
+def get_crew_addresses():
+    """Generate address mappings for all crew members programmatically."""
+    crew_addrs = {}
+    
+    for crew_num in range(1, 6):
+        # Get the crew-specific constant prefix (e.g., "CREW1_", "CREW2_", etc)
+        prefix = f"CREW{crew_num}_"
+        
+        # Use globals() to look up constants by constructed name
+        crew_addrs[crew_num] = {
+            'rank': globals()[f"{prefix}RANK_ADDR"],
+            'hp': globals()[f"{prefix}HP_ADDR"],
+            'characteristics': {
+                'strength': globals()[f"{prefix}STRENGTH_ADDR"],
+                'stamina': globals()[f"{prefix}STAMINA_ADDR"],
+                'dexterity': globals()[f"{prefix}DEXTERITY_ADDR"],
+                'comprehend': globals()[f"{prefix}COMPREHEND_ADDR"],
+                'charisma': globals()[f"{prefix}CHARISMA_ADDR"]
+            },
+            'abilities': {
+                'contact': globals()[f"{prefix}CONTACT_ADDR"],
+                'edged': globals()[f"{prefix}EDGED_ADDR"],
+                'projectile': globals()[f"{prefix}PROJECTILE_ADDR"],
+                'blaster': globals()[f"{prefix}BLASTER_ADDR"],
+                'tactics': globals()[f"{prefix}TACTICS_ADDR"],
+                'recon': globals()[f"{prefix}RECON_ADDR"],
+                'gunnery': globals()[f"{prefix}GUNNERY_ADDR"],
+                'atv_repair': globals()[f"{prefix}ATV_REPAIR_ADDR"],
+                'mining': globals()[f"{prefix}MINING_ADDR"],
+                'athletics': globals()[f"{prefix}ATHLETICS_ADDR"],
+                'observation': globals()[f"{prefix}OBSERVATION_ADDR"],
+                'bribery': globals()[f"{prefix}BRIBERY_ADDR"]
+            },
+            'equipment': {
+                'armor': globals()[f"{prefix}ARMOR_ADDR"],
+                'weapon': globals()[f"{prefix}WEAPON_ADDR"],
+                'onhand_weapons_start': globals()[f"{prefix}ONHAND_WEAPONS_START"],
+                'inventory_start': globals()[f"{prefix}INVENTORY_START"]
+            }
+        }
+    
+    return crew_addrs
+
 def load_save_game(filename: str) -> dict:
     """
     Load all save game data from the specified file into a dictionary.
@@ -151,163 +194,7 @@ def load_save_game(filename: str) -> dict:
         save_data['ship']['laser'] = read_byte(f, SHIP_LASER_ADDR)
         
         # Define addresses for all crew members
-        crew_addrs = {
-            1: {
-                'rank': CREW1_RANK_ADDR,
-                'hp': CREW1_HP_ADDR,
-                'characteristics': {
-                    'strength': CREW1_STRENGTH_ADDR,
-                    'stamina': CREW1_STAMINA_ADDR,
-                    'dexterity': CREW1_DEXTERITY_ADDR,
-                    'comprehend': CREW1_COMPREHEND_ADDR,
-                    'charisma': CREW1_CHARISMA_ADDR
-                },
-                'abilities': {
-                    'contact': CREW1_CONTACT_ADDR,
-                    'edged': CREW1_EDGED_ADDR,
-                    'projectile': CREW1_PROJECTILE_ADDR,
-                    'blaster': CREW1_BLASTER_ADDR,
-                    'tactics': CREW1_TACTICS_ADDR,
-                    'recon': CREW1_RECON_ADDR,
-                    'gunnery': CREW1_GUNNERY_ADDR,
-                    'atv_repair': CREW1_ATV_REPAIR_ADDR,
-                    'mining': CREW1_MINING_ADDR,
-                    'athletics': CREW1_ATHLETICS_ADDR,
-                    'observation': CREW1_OBSERVATION_ADDR,
-                    'bribery': CREW1_BRIBERY_ADDR
-                },
-                'equipment': {
-                    'armor': CREW1_ARMOR_ADDR,
-                    'weapon': CREW1_WEAPON_ADDR,
-                    'onhand_weapons_start': CREW1_ONHAND_WEAPONS_START,
-                    'inventory_start': CREW1_INVENTORY_START
-                }
-            },
-            2: {
-                'rank': CREW2_RANK_ADDR,
-                'hp': CREW2_HP_ADDR,
-                'characteristics': {
-                    'strength': CREW2_STRENGTH_ADDR,
-                    'stamina': CREW2_STAMINA_ADDR,
-                    'dexterity': CREW2_DEXTERITY_ADDR,
-                    'comprehend': CREW2_COMPREHEND_ADDR,
-                    'charisma': CREW2_CHARISMA_ADDR
-                },
-                'abilities': {
-                    'contact': CREW2_CONTACT_ADDR,
-                    'edged': CREW2_EDGED_ADDR,
-                    'projectile': CREW2_PROJECTILE_ADDR,
-                    'blaster': CREW2_BLASTER_ADDR,
-                    'tactics': CREW2_TACTICS_ADDR,
-                    'recon': CREW2_RECON_ADDR,
-                    'gunnery': CREW2_GUNNERY_ADDR,
-                    'atv_repair': CREW2_ATV_REPAIR_ADDR,
-                    'mining': CREW2_MINING_ADDR,
-                    'athletics': CREW2_ATHLETICS_ADDR,
-                    'observation': CREW2_OBSERVATION_ADDR,
-                    'bribery': CREW2_BRIBERY_ADDR
-                },
-                'equipment': {
-                    'armor': CREW2_ARMOR_ADDR,
-                    'weapon': CREW2_WEAPON_ADDR,
-                    'onhand_weapons_start': CREW2_ONHAND_WEAPONS_START,
-                    'inventory_start': CREW2_INVENTORY_START
-                }
-            },
-            3: {
-                'rank': CREW3_RANK_ADDR,
-                'hp': CREW3_HP_ADDR,
-                'characteristics': {
-                    'strength': CREW3_STRENGTH_ADDR,
-                    'stamina': CREW3_STAMINA_ADDR,
-                    'dexterity': CREW3_DEXTERITY_ADDR,
-                    'comprehend': CREW3_COMPREHEND_ADDR,
-                    'charisma': CREW3_CHARISMA_ADDR
-                },
-                'abilities': {
-                    'contact': CREW3_CONTACT_ADDR,
-                    'edged': CREW3_EDGED_ADDR,
-                    'projectile': CREW3_PROJECTILE_ADDR,
-                    'blaster': CREW3_BLASTER_ADDR,
-                    'tactics': CREW3_TACTICS_ADDR,
-                    'recon': CREW3_RECON_ADDR,
-                    'gunnery': CREW3_GUNNERY_ADDR,
-                    'atv_repair': CREW3_ATV_REPAIR_ADDR,
-                    'mining': CREW3_MINING_ADDR,
-                    'athletics': CREW3_ATHLETICS_ADDR,
-                    'observation': CREW3_OBSERVATION_ADDR,
-                    'bribery': CREW3_BRIBERY_ADDR
-                },
-                'equipment': {
-                    'armor': CREW3_ARMOR_ADDR,
-                    'weapon': CREW3_WEAPON_ADDR,
-                    'onhand_weapons_start': CREW3_ONHAND_WEAPONS_START,
-                    'inventory_start': CREW3_INVENTORY_START
-                }
-            },
-            4: {
-                'rank': CREW4_RANK_ADDR,
-                'hp': CREW4_HP_ADDR,
-                'characteristics': {
-                    'strength': CREW4_STRENGTH_ADDR,
-                    'stamina': CREW4_STAMINA_ADDR,
-                    'dexterity': CREW4_DEXTERITY_ADDR,
-                    'comprehend': CREW4_COMPREHEND_ADDR,
-                    'charisma': CREW4_CHARISMA_ADDR
-                },
-                'abilities': {
-                    'contact': CREW4_CONTACT_ADDR,
-                    'edged': CREW4_EDGED_ADDR,
-                    'projectile': CREW4_PROJECTILE_ADDR,
-                    'blaster': CREW4_BLASTER_ADDR,
-                    'tactics': CREW4_TACTICS_ADDR,
-                    'recon': CREW4_RECON_ADDR,
-                    'gunnery': CREW4_GUNNERY_ADDR,
-                    'atv_repair': CREW4_ATV_REPAIR_ADDR,
-                    'mining': CREW4_MINING_ADDR,
-                    'athletics': CREW4_ATHLETICS_ADDR,
-                    'observation': CREW4_OBSERVATION_ADDR,
-                    'bribery': CREW4_BRIBERY_ADDR
-                },
-                'equipment': {
-                    'armor': CREW4_ARMOR_ADDR,
-                    'weapon': CREW4_WEAPON_ADDR,
-                    'onhand_weapons_start': CREW4_ONHAND_WEAPONS_START,
-                    'inventory_start': CREW4_INVENTORY_START
-                }
-            },
-            5: {
-                'rank': CREW5_RANK_ADDR,
-                'hp': CREW5_HP_ADDR,
-                'characteristics': {
-                    'strength': CREW5_STRENGTH_ADDR,
-                    'stamina': CREW5_STAMINA_ADDR,
-                    'dexterity': CREW5_DEXTERITY_ADDR,
-                    'comprehend': CREW5_COMPREHEND_ADDR,
-                    'charisma': CREW5_CHARISMA_ADDR
-                },
-                'abilities': {
-                    'contact': CREW5_CONTACT_ADDR,
-                    'edged': CREW5_EDGED_ADDR,
-                    'projectile': CREW5_PROJECTILE_ADDR,
-                    'blaster': CREW5_BLASTER_ADDR,
-                    'tactics': CREW5_TACTICS_ADDR,
-                    'recon': CREW5_RECON_ADDR,
-                    'gunnery': CREW5_GUNNERY_ADDR,
-                    'atv_repair': CREW5_ATV_REPAIR_ADDR,
-                    'mining': CREW5_MINING_ADDR,
-                    'athletics': CREW5_ATHLETICS_ADDR,
-                    'observation': CREW5_OBSERVATION_ADDR,
-                    'bribery': CREW5_BRIBERY_ADDR
-                },
-                'equipment': {
-                    'armor': CREW5_ARMOR_ADDR,
-                    'weapon': CREW5_WEAPON_ADDR,
-                    'onhand_weapons_start': CREW5_ONHAND_WEAPONS_START,
-                    'inventory_start': CREW5_INVENTORY_START
-                }
-            }
-        }
+        crew_addrs = get_crew_addresses()
         
         # Load data for each crew member
         for crew_num in range(1, 6):
