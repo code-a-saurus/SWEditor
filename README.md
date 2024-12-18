@@ -1,5 +1,6 @@
 ## Sentinel Worlds I: Future Magic Save Game Editor
 Version: 1.0
+
 Author: Lee Hutchinson
 
 This script provides a command-line interface for editing save game files
