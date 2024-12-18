@@ -11,5 +11,5 @@ The editor can modify:
 - Ship software levels
 
 ### Usage:
-    Run the script and follow the interactive prompts to edit either
-    GAMEA.FM or GAMEB.FM save files.
+Run the script and follow the interactive prompts to edit either
+GAMEA.FM or GAMEB.FM save files.
