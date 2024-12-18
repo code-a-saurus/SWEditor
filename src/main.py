@@ -20,13 +20,21 @@ Usage:
 import os
 import sys
 from typing import Optional, Dict, List
+from sw_constants import * # Imports all our game constants
 
 # Constants for file operations
 SAVE_FILE_A = "test_data/gamea.fm"
 SAVE_FILE_B = "test_data/gameb.fm"
 
-# Global variable to track if there are unsaved changes
-has_pending_changes = False
+# Global state for save game data
+save_game_data = {}
+
+# Global state for application
+app_state = {
+    'current_file': None,  # Will hold 'A' or 'B' once user selects
+    'has_changes': False,  # Track if there are unsaved changes
+    'file_loaded': False   # Track if we've successfully loaded a file
+}
 
 def main():
     """Main entry point for the save game editor."""
