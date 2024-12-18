@@ -36,12 +36,41 @@ app_state = {
     'file_loaded': False   # Track if we've successfully loaded a file
 }
 
+def get_save_file_choice() -> Optional[str]:
+    """Prompt user to select which save file to edit."""
+    print("\nSelect save file to edit:")
+    print("A) GAMEA.FM")
+    print("B) GAMEB.FM")
+    print("Any other key to quit")
+    
+    choice = input("\nChoice: ").upper()
+    
+    if choice == 'A':
+        return SAVE_FILE_A
+    elif choice == 'B':
+        return SAVE_FILE_B
+    else:
+        return None
+
 def main():
     """Main entry point for the save game editor."""
     print("Sentinel Worlds I: Future Magic - Save Game Editor")
     print("-----------------------------------------------")
     
-    # TODO: Add main program logic here
+    filename = get_save_file_choice()
+    if not filename:
+        print("\nExiting editor.")
+        sys.exit(0)
+        
+    if not os.path.exists(filename):
+        print(f"\nError: Save file {filename} not found!")
+        sys.exit(1)
+        
+    app_state['current_file'] = 'A' if filename == SAVE_FILE_A else 'B'
+    print(f"\nOpening {os.path.basename(filename)}...")
+    
+    # TODO: Here's where we'll add code to load the save file
+    # and display the main menu
 
 if __name__ == "__main__":
     main()
