@@ -228,23 +228,177 @@ def load_save_game(filename: str) -> dict:
     
     return save_data
 
-def print_dictionary(d, indent=0):
+def write_byte(file_handle, address: int, value: int):
     """
-    Recursively print a nested dictionary with nice formatting.
+    Write a single byte to a specific address in the save game file.
     
     Args:
-        d: Dictionary to print
-        indent: Current indentation level
+        file_handle: An open file handle in binary write mode
+        address: The hex address to write to
+        value: The value to write (must be 0-255)
+        
+    Raises:
+        ValueError: If value is outside valid byte range
     """
-    for key, value in d.items():
-        indent_str = "  " * indent
-        if isinstance(value, dict):
-            print(f"{indent_str}{key}:")
-            print_dictionary(value, indent + 1)
-        elif isinstance(value, list):
-            print(f"{indent_str}{key}: {value}")
-        else:
-            print(f"{indent_str}{key}: {value}")
+    if not 0 <= value <= 255:
+        raise ValueError(f"Byte value {value} at address {hex(address)} is outside valid range (0-255)")
+    
+    # TODO: Future improvement - compare value against current byte on disk
+    # to determine if write is actually needed
+    
+    file_handle.seek(address)
+    file_handle.write(bytes([value]))
+
+def save_game(filename: str) -> bool:
+    """
+    Write all values from save_game_data back to the save file.
+    
+    Args:
+        filename: Path to the save game file
+        
+    Returns:
+        bool: True if save successful, False otherwise
+        
+    Raises:
+        IOError: If there are problems writing to the file
+    """
+    try:
+        with open(filename, 'rb+') as f:  # Note: binary read+write mode
+            # Save party-wide values
+            write_byte(f, PARTY_CASH_ADDR, save_game_data['party']['cash'])
+            write_byte(f, PARTY_LIGHT_ENERGY_ADDR, save_game_data['party']['light_energy'])
+            
+            # Save ship software values
+            write_byte(f, SHIP_MOVE_ADDR, save_game_data['ship']['move'])
+            write_byte(f, SHIP_TARGET_ADDR, save_game_data['ship']['target'])
+            write_byte(f, SHIP_ENGINE_ADDR, save_game_data['ship']['engine'])
+            write_byte(f, SHIP_LASER_ADDR, save_game_data['ship']['laser'])
+            
+            # Get crew addresses mapping
+            crew_addrs = get_crew_addresses()
+            
+            # Save data for each crew member
+            for crew_num in range(1, 6):
+                addrs = crew_addrs[crew_num]
+                crew = save_game_data['crew'][crew_num]
+                
+                # Basic stats
+                write_byte(f, addrs['rank'], crew['rank'])
+                write_byte(f, addrs['hp'], crew['hp'])
+                
+                # Characteristics
+                for stat, addr in addrs['characteristics'].items():
+                    write_byte(f, addr, crew['characteristics'][stat])
+                
+                # Abilities
+                for ability, addr in addrs['abilities'].items():
+                    write_byte(f, addr, crew['abilities'][ability])
+                
+                # Equipment
+                write_byte(f, addrs['equipment']['armor'], crew['equipment']['armor'])
+                write_byte(f, addrs['equipment']['weapon'], crew['equipment']['weapon'])
+                
+                # Save onhand weapons (3 consecutive bytes)
+                for i in range(3):
+                    write_byte(f, addrs['equipment']['onhand_weapons_start'] + i,
+                             crew['equipment']['onhand_weapons'][i])
+                
+                # Save inventory (8 consecutive bytes)
+                for i in range(8):
+                    write_byte(f, addrs['equipment']['inventory_start'] + i,
+                             crew['equipment']['inventory'][i])
+                             
+        app_state['has_changes'] = False  # Clear the changes flag
+        return True
+        
+    except (IOError, ValueError) as e:
+        print(f"\nError saving game: {e}")
+        return False
+
+def display_main_menu():
+    """Display the main menu options to the user."""
+    print("\nMain Menu:")
+    print("1) Edit party cash")
+    print("2) Edit party light energy")
+    print("3) Edit ship software")
+    print("4) Edit party member stats")
+    if app_state['has_changes']:
+        print("W) (W)rite pending changes to disk")
+    print("Q) (Q)uit")
+
+def handle_main_menu() -> bool:
+    """
+    Handle user input for the main menu.
+    
+    Returns:
+        bool: False if the user wants to quit, True to continue
+    """
+    choice = input("\nEnter choice: ").upper()
+    
+    if choice == 'Q':
+        if app_state['has_changes']:
+            confirm = input("You have unsaved changes. Really quit? (y/N): ").upper()
+            if confirm != 'Y':
+                return True
+        return False
+    elif choice == 'W' and app_state['has_changes']:
+        filename = SAVE_FILE_A if app_state['current_file'] == 'A' else SAVE_FILE_B
+        if save_game(filename):
+            print("\nChanges saved successfully!")
+        return True
+    elif choice == '1':
+        edit_party_cash()
+        return True
+    elif choice == '2':
+        # TODO: Implement edit light energy
+        print("\nEditing light energy not yet implemented!")
+        return True
+    elif choice == '3':
+        # TODO: Implement edit ship software
+        print("\nEditing ship software not yet implemented!")
+        return True
+    elif choice == '4':
+        # TODO: Implement edit party member stats
+        print("\nEditing party member stats not yet implemented!")
+        return True
+    else:
+        print("\nInvalid choice!")
+        return True
+
+def edit_party_cash() -> None:
+    """
+    Edit the party's current cash value.
+    Handles input validation and updates the changes flag if modified.
+    """
+    current_cash = save_game_data['party']['cash']
+    print(f"\nCurrent party cash: {current_cash}")
+    
+    while True:
+        try:
+            new_cash = input(f"Enter new cash value (1-{MAX_CASH}) or press Enter to keep current: ")
+            
+            # Handle empty input (keep current value)
+            if not new_cash:
+                print("Keeping current value.")
+                return
+                
+            # Convert and validate input
+            new_cash = int(new_cash)
+            if not 1 <= new_cash <= MAX_CASH:
+                print(f"Error: Value must be between 1 and {MAX_CASH}")
+                continue
+                
+            # Only update if value actually changed
+            if new_cash != current_cash:
+                save_game_data['party']['cash'] = new_cash
+                app_state['has_changes'] = True
+                print(f"Cash updated to: {new_cash}")
+            else:
+                print("Value unchanged.")
+            return
+            
+        except ValueError:
+            print("Error: Please enter a valid number")
 
 def main():
     """Main entry point for the save game editor."""
@@ -253,7 +407,7 @@ def main():
     
     filename = get_save_file_choice()
     if not filename:
-        print("\nExiting editor.")
+        print("\nExiting.")
         sys.exit(0)
         
     if not os.path.exists(filename):
@@ -269,10 +423,11 @@ def main():
         save_game_data = load_save_game(filename)
         app_state['file_loaded'] = True
         
-        # Print all values in the dictionary
-        print("\nAll Save Game Values:")
-        print("---------------------")
-        print_dictionary(save_game_data)
+        # Enter main menu loop
+        while True:
+            display_main_menu()
+            if not handle_main_menu():
+                break
             
     except (IOError, FileNotFoundError) as e:
         print(f"\nError loading save file: {e}")
@@ -281,7 +436,7 @@ def main():
         print(f"\nUnexpected error: {e}")
         sys.exit(1)
         
-    print("\nTest complete. Exiting editor.")
-
+    print("\nExiting.")
+    
 if __name__ == "__main__":
     main()
