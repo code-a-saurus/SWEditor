@@ -16,3 +16,6 @@ build/
 
 # MacOS
 **/.DS_Store
+
+# Sentinel Worlds saves
+test_data/
