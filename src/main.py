@@ -418,7 +418,7 @@ def handle_main_menu() -> bool:
         return True
     elif choice == '2':
         # TODO: Implement edit light energy
-        print("\nEditing light energy not yet implemented!")
+        edit_light_energy()
         return True
     elif choice == '3':
         # TODO: Implement edit ship software
