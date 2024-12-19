@@ -66,6 +66,59 @@ def read_byte(file_handle, address: int) -> int:
     file_handle.seek(address)
     return int.from_bytes(file_handle.read(1), byteorder='little')
 
+def read_multi_bytes(file_handle, address: int, num_bytes: int) -> int:
+    """
+    Read multiple bytes from a specific address in little-endian format.
+    
+    Args:
+        file_handle: An open file handle in binary read mode
+        address: The starting hex address to read from
+        num_bytes: Number of consecutive bytes to read
+        
+    Returns:
+        int: The combined value of the bytes as an integer
+        
+    Raises:
+        IOError: If there are problems reading from the file
+        ValueError: If num_bytes is less than 1
+    """
+    if num_bytes < 1:
+        raise ValueError("Number of bytes to read must be positive")
+        
+    # Seek to the starting address
+    file_handle.seek(address)
+    
+    # Read the specified number of bytes
+    bytes_data = file_handle.read(num_bytes)
+    
+    # Verify we got all the bytes we expected
+    if len(bytes_data) != num_bytes:
+        raise IOError(f"Could not read {num_bytes} bytes from address {hex(address)}")
+    
+    # Convert the bytes to an integer using little-endian format
+    return int.from_bytes(bytes_data, byteorder='little')
+
+def write_byte(file_handle, address: int, value: int):
+    """
+    Write a single byte to a specific address in the save game file.
+    
+    Args:
+        file_handle: An open file handle in binary write mode
+        address: The hex address to write to
+        value: The value to write (must be 0-255)
+        
+    Raises:
+        ValueError: If value is outside valid byte range
+    """
+    if not 0 <= value <= 255:
+        raise ValueError(f"Byte value {value} at address {hex(address)} is outside valid range (0-255)")
+    
+    # TODO: Future improvement - compare value against current byte on disk
+    # to determine if write is actually needed
+    
+    file_handle.seek(address)
+    file_handle.write(bytes([value]))
+
 def initialize_save_data() -> dict:
     """
     Create the initial save_game_data dictionary structure.
@@ -134,7 +187,10 @@ def get_crew_addresses():
         # Use globals() to look up constants by constructed name
         crew_addrs[crew_num] = {
             'rank': globals()[f"{prefix}RANK_ADDR"],
-            'hp': globals()[f"{prefix}HP_ADDR"],
+                'hp': {
+                    'start': globals()[f"{prefix}HP_START"],
+                    'length': globals()[f"{prefix}HP_LENGTH"]
+                },
             'characteristics': {
                 'strength': globals()[f"{prefix}STRENGTH_ADDR"],
                 'stamina': globals()[f"{prefix}STAMINA_ADDR"],
@@ -184,7 +240,7 @@ def load_save_game(filename: str) -> dict:
     
     with open(filename, 'rb') as f:
         # Load party-wide values
-        save_data['party']['cash'] = read_byte(f, PARTY_CASH_ADDR)
+        save_data['party']['cash'] = read_multi_bytes(f, PARTY_CASH_ADDR, PARTY_CASH_LENGTH)
         save_data['party']['light_energy'] = read_byte(f, PARTY_LIGHT_ENERGY_ADDR)
         
         # Load ship software values
@@ -202,7 +258,10 @@ def load_save_game(filename: str) -> dict:
             
             # Basic stats
             save_data['crew'][crew_num]['rank'] = read_byte(f, addrs['rank'])
-            save_data['crew'][crew_num]['hp'] = read_byte(f, addrs['hp'])
+            save_data['crew'][crew_num]['hp'] = read_multi_bytes(f, 
+                addrs['hp']['start'], 
+                addrs['hp']['length']
+            )
             
             # Characteristics
             for stat, addr in addrs['characteristics'].items():
@@ -227,27 +286,6 @@ def load_save_game(filename: str) -> dict:
                     read_byte(f, addrs['equipment']['inventory_start'] + i)
     
     return save_data
-
-def write_byte(file_handle, address: int, value: int):
-    """
-    Write a single byte to a specific address in the save game file.
-    
-    Args:
-        file_handle: An open file handle in binary write mode
-        address: The hex address to write to
-        value: The value to write (must be 0-255)
-        
-    Raises:
-        ValueError: If value is outside valid byte range
-    """
-    if not 0 <= value <= 255:
-        raise ValueError(f"Byte value {value} at address {hex(address)} is outside valid range (0-255)")
-    
-    # TODO: Future improvement - compare value against current byte on disk
-    # to determine if write is actually needed
-    
-    file_handle.seek(address)
-    file_handle.write(bytes([value]))
 
 def save_game(filename: str) -> bool:
     """
