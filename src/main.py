@@ -467,6 +467,41 @@ def edit_party_cash() -> None:
         except ValueError:
             print("Error: Please enter a valid number")
 
+def edit_light_energy() -> None:
+    """
+    Edit the party's current light energy value.
+    Handles input validation and updates the changes flag if modified.
+    """
+    current_energy = save_game_data['party']['light_energy']
+    print(f"\nCurrent party light energy: {current_energy}")
+    
+    while True:
+        try:
+            new_energy = input(f"Enter new light energy value (1-{MAX_LIGHT_ENERGY}) or press Enter to keep current: ")
+            
+            # Handle empty input (keep current value)
+            if not new_energy:
+                print("Keeping current value.")
+                return
+                
+            # Convert and validate input
+            new_energy = int(new_energy)
+            if not 1 <= new_energy <= MAX_LIGHT_ENERGY:
+                print(f"Error: Value must be between 1 and {MAX_LIGHT_ENERGY}")
+                continue
+                
+            # Only update if value actually changed
+            if new_energy != current_energy:
+                save_game_data['party']['light_energy'] = new_energy
+                app_state['has_changes'] = True
+                print(f"Light energy updated to: {new_energy}")
+            else:
+                print("Value unchanged.")
+            return
+            
+        except ValueError:
+            print("Error: Please enter a valid number")
+
 def main():
     """Main entry point for the save game editor."""
     print("Sentinel Worlds I: Future Magic - Save Game Editor")
