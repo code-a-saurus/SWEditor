@@ -119,6 +119,35 @@ def write_byte(file_handle, address: int, value: int):
     file_handle.seek(address)
     file_handle.write(bytes([value]))
 
+def write_multi_bytes(file_handle, address: int, value: int, num_bytes: int):
+    """
+    Write multiple bytes to a specific address in little-endian format.
+    
+    Args:
+        file_handle: An open file handle in binary write mode
+        address: The hex address to write to
+        value: The integer value to write
+        num_bytes: Number of bytes to write
+        
+    Raises:
+        ValueError: If value won't fit in num_bytes or if num_bytes < 1
+    """
+    if num_bytes < 1:
+        raise ValueError("Number of bytes to write must be positive")
+        
+    # Calculate maximum value that can fit in num_bytes
+    max_value = (256 ** num_bytes) - 1
+    
+    if not 0 <= value <= max_value:
+        raise ValueError(f"Value {value} is too large for {num_bytes} bytes (max: {max_value})")
+    
+    # Convert value to bytes in little-endian format
+    value_bytes = value.to_bytes(num_bytes, byteorder='little')
+    
+    # Seek to address and write bytes
+    file_handle.seek(address)
+    file_handle.write(value_bytes)
+
 def initialize_save_data() -> dict:
     """
     Create the initial save_game_data dictionary structure.
@@ -303,7 +332,7 @@ def save_game(filename: str) -> bool:
     try:
         with open(filename, 'rb+') as f:  # Note: binary read+write mode
             # Save party-wide values
-            write_byte(f, PARTY_CASH_ADDR, save_game_data['party']['cash'])
+            write_multi_bytes(f, PARTY_CASH_ADDR, save_game_data['party']['cash'], PARTY_CASH_LENGTH)
             write_byte(f, PARTY_LIGHT_ENERGY_ADDR, save_game_data['party']['light_energy'])
             
             # Save ship software values
@@ -322,7 +351,7 @@ def save_game(filename: str) -> bool:
                 
                 # Basic stats
                 write_byte(f, addrs['rank'], crew['rank'])
-                write_byte(f, addrs['hp'], crew['hp'])
+                write_multi_bytes(f, addrs['hp']['start'], crew['hp'], crew_addrs[crew_num]['hp']['length'])
                 
                 # Characteristics
                 for stat, addr in addrs['characteristics'].items():
