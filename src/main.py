@@ -456,10 +456,13 @@ def handle_main_menu() -> bool:
         edit_ship_software()
         return True
     elif choice == '4':
-        member_num = handle_party_select_menu()
-        if member_num:  # Only proceed if a member was selected
-            handle_character_edit_menu(member_num)
-        return True
+        while True:  # Add a loop for the party select level
+            member_num = handle_party_select_menu()
+            if member_num is None:  # User pressed R at party select
+                break  # Exit to main menu
+            handle_character_edit_menu(member_num)  # Let user edit character
+        # When handle_character_edit_menu() returns, loop continues to party select
+        return True  # Now this only happens when user explicitly returns from party select
     else:
         print("\nInvalid choice!")
         return True
