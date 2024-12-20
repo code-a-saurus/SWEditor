@@ -417,7 +417,7 @@ def save_game(filename: str) -> bool:
 
 def display_main_menu():
     """Display the main menu options to the user."""
-    print("\nMain Menu:")
+    print("\nMain menu:")
     print("1) Edit party cash")
     print("2) Edit party light energy")
     print("3) Edit ship software")
@@ -462,6 +462,90 @@ def handle_main_menu() -> bool:
     else:
         print("\nInvalid choice!")
         return True
+
+def display_ship_software() -> None:
+    """Display current values for all ship software."""
+    print("\nShip software values:")
+    print("--------------------")
+    print(f"  MOVE current value: {save_game_data['ship']['move']}")
+    print(f"TARGET current value: {save_game_data['ship']['target']}")
+    print(f"ENGINE current value: {save_game_data['ship']['engine']}")
+    print(f" LASER current value: {save_game_data['ship']['laser']}")
+
+def display_party_select_menu() -> None:
+    """Display the party member selection menu."""
+    print("\nSelect party member to edit:")
+    print("1) Edit party member 1")
+    print("2) Edit party member 2") 
+    print("3) Edit party member 3")
+    print("4) Edit party member 4")
+    print("5) Edit party member 5")
+    print("R) Return to main menu")
+
+    # TODO: Extract and display party member names
+
+def handle_party_select_menu() -> Optional[int]:
+    """
+    Handle user input for the party member selection menu.
+    
+    Returns:
+        Optional[int]: Selected party member number (1-5), or None to return to main menu
+    """
+    while True:
+        display_party_select_menu()
+        choice = input("\nEnter choice: ").upper()
+        
+        if choice == 'R':
+            return None
+            
+        try:
+            member_num = int(choice)
+            if 1 <= member_num <= 5:
+                return member_num
+            else:
+                print("\nInvalid choice! Please select 1-5 or R to return.")
+        except ValueError:
+            print("\nInvalid choice! Please select 1-5 or R to return.")
+
+def edit_ship_software() -> None:
+    """Edit ship software values."""
+    while True:
+        display_ship_software()
+        print("\nE) Edit values")
+        print("R) Return to main menu")
+        
+        choice = input("\nChoice: ").upper()
+        
+        if choice == 'R':
+            return
+        elif choice == 'E':
+            # Loop through each software value in sequence
+            for software in ['move', 'target', 'engine', 'laser']:
+                current_value = save_game_data['ship'][software]
+                
+                while True:
+                    try:
+                        new_value = input(f"\nEnter new {software} value (1-{MAX_SHIP_SOFTWARE}) or press Enter to keep {current_value}: ")
+                        
+                        if not new_value:  # Keep current value
+                            break
+                            
+                        new_value = int(new_value)
+                        if 1 <= new_value <= MAX_SHIP_SOFTWARE:
+                            if new_value != current_value:
+                                save_game_data['ship'][software] = new_value
+                                app_state['has_changes'] = True
+                            break
+                        else:
+                            print(f"Error: Value must be between 1 and {MAX_SHIP_SOFTWARE}")
+                            
+                    except ValueError:
+                        print("Error: Please enter a valid number")
+                        
+            # Show final values after editing
+            display_ship_software()
+        else:
+            print("\nInvalid choice!")
 
 def edit_party_cash() -> None:
     """
@@ -532,55 +616,6 @@ def edit_light_energy() -> None:
             
         except ValueError:
             print("Error: Please enter a valid number")
-
-def display_ship_software() -> None:
-    """Display current values for all ship software."""
-    print("\nShip Software Values:")
-    print("--------------------")
-    print(f"Move:   Current value: {save_game_data['ship']['move']}")
-    print(f"Target: Current value: {save_game_data['ship']['target']}")
-    print(f"Engine: Current value: {save_game_data['ship']['engine']}")
-    print(f"Laser:  Current value: {save_game_data['ship']['laser']}")
-
-def edit_ship_software() -> None:
-    """Edit ship software values."""
-    while True:
-        display_ship_software()
-        print("\nE) Edit values")
-        print("R) Return to main menu")
-        
-        choice = input("\nChoice: ").upper()
-        
-        if choice == 'R':
-            return
-        elif choice == 'E':
-            # Loop through each software value in sequence
-            for software in ['move', 'target', 'engine', 'laser']:
-                current_value = save_game_data['ship'][software]
-                
-                while True:
-                    try:
-                        new_value = input(f"\nEnter new {software} value (1-{MAX_SHIP_SOFTWARE}) or press Enter to keep {current_value}: ")
-                        
-                        if not new_value:  # Keep current value
-                            break
-                            
-                        new_value = int(new_value)
-                        if 1 <= new_value <= MAX_SHIP_SOFTWARE:
-                            if new_value != current_value:
-                                save_game_data['ship'][software] = new_value
-                                app_state['has_changes'] = True
-                            break
-                        else:
-                            print(f"Error: Value must be between 1 and {MAX_SHIP_SOFTWARE}")
-                            
-                    except ValueError:
-                        print("Error: Please enter a valid number")
-                        
-            # Show final values after editing
-            display_ship_software()
-        else:
-            print("\nInvalid choice!")
 
 def main():
     """Main entry point for the save game editor."""
