@@ -548,13 +548,50 @@ def handle_character_edit_menu(member_num: int) -> None:
             # TODO: edit_abilities(member_num)
             print("\nAbilities editing not yet implemented!")
         elif choice == '3':
-            # TODO: edit_hp(member_num)
-            print("\nHP editing not yet implemented!")
+            edit_hp(member_num)
         elif choice == '4':
             # TODO: edit_equipment(member_num)
             print("\nEquipment editing not yet implemented!")
         else:
             print("\nInvalid choice!")
+
+def edit_hp(member_num: int) -> None:
+    """
+    Edit the HP value for a specific crew member.
+    Handles input validation and updates the changes flag if modified.
+    
+    Args:
+        member_num: The crew member number (1-5) to edit
+    """
+    current_hp = save_game_data['crew'][member_num]['hp']
+    print(f"\nCurrent HP for crew member {member_num}: {current_hp}")
+    
+    while True:
+        try:
+            new_hp = input(f"Enter new HP value (1-{MAX_HP}) or press Enter to keep current: ")
+            
+            # Handle empty input (keep current value)
+            if not new_hp:
+                print("Keeping current value.")
+                return
+                
+            # Convert and validate input
+            new_hp = int(new_hp)
+            if not 1 <= new_hp <= MAX_HP:
+                print(f"Error: Value must be between 1 and {MAX_HP}")
+                continue
+                
+            # Only update if value actually changed
+            if new_hp != current_hp:
+                save_game_data['crew'][member_num]['hp'] = new_hp
+                app_state['has_changes'] = True
+                print(f"HP updated to: {new_hp}")
+            else:
+                print("Value unchanged.")
+            return
+            
+        except ValueError:
+            print("Error: Please enter a valid number")
 
 def edit_ship_software() -> None:
     """Edit ship software values."""
