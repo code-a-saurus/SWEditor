@@ -19,7 +19,7 @@ Usage:
 
 import os
 import sys
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Set
 from sw_constants import * # Imports all our game constants
 from inventory_constants import ITEM_NAMES, VALID_INVENTORY, VALID_ARMOR, VALID_WEAPONS
 
@@ -566,7 +566,7 @@ def display_equipment(member_num: int) -> None:
     for i, item in enumerate(equipment['inventory'], 1):
         print(f"{i}) [{hex(item)}] {ITEM_NAMES[item]}")
 
-def get_item_code(prompt: str, valid_items: set) -> int:
+def get_item_code(prompt: str, valid_items: set) -> Optional[int]:
     """
     Get a valid item code from user input.
     
@@ -575,7 +575,7 @@ def get_item_code(prompt: str, valid_items: set) -> int:
         valid_items: Set of valid item codes for this slot
         
     Returns:
-        int: The validated item code
+        Optional[int]: The validated item code, or None to keep current item
     """
     while True:
         try:
