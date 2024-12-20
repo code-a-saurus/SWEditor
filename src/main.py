@@ -450,12 +450,10 @@ def handle_main_menu() -> bool:
         edit_party_cash()
         return True
     elif choice == '2':
-        # TODO: Implement edit light energy
         edit_light_energy()
         return True
     elif choice == '3':
-        # TODO: Implement edit ship software
-        print("\nEditing ship software not yet implemented!")
+        edit_ship_software()
         return True
     elif choice == '4':
         # TODO: Implement edit party member stats
@@ -534,6 +532,55 @@ def edit_light_energy() -> None:
             
         except ValueError:
             print("Error: Please enter a valid number")
+
+def display_ship_software() -> None:
+    """Display current values for all ship software."""
+    print("\nShip Software Values:")
+    print("--------------------")
+    print(f"Move:   Current value: {save_game_data['ship']['move']}")
+    print(f"Target: Current value: {save_game_data['ship']['target']}")
+    print(f"Engine: Current value: {save_game_data['ship']['engine']}")
+    print(f"Laser:  Current value: {save_game_data['ship']['laser']}")
+
+def edit_ship_software() -> None:
+    """Edit ship software values."""
+    while True:
+        display_ship_software()
+        print("\nE) Edit values")
+        print("R) Return to main menu")
+        
+        choice = input("\nChoice: ").upper()
+        
+        if choice == 'R':
+            return
+        elif choice == 'E':
+            # Loop through each software value in sequence
+            for software in ['move', 'target', 'engine', 'laser']:
+                current_value = save_game_data['ship'][software]
+                
+                while True:
+                    try:
+                        new_value = input(f"\nEnter new {software} value (1-{MAX_SHIP_SOFTWARE}) or press Enter to keep {current_value}: ")
+                        
+                        if not new_value:  # Keep current value
+                            break
+                            
+                        new_value = int(new_value)
+                        if 1 <= new_value <= MAX_SHIP_SOFTWARE:
+                            if new_value != current_value:
+                                save_game_data['ship'][software] = new_value
+                                app_state['has_changes'] = True
+                            break
+                        else:
+                            print(f"Error: Value must be between 1 and {MAX_SHIP_SOFTWARE}")
+                            
+                    except ValueError:
+                        print("Error: Please enter a valid number")
+                        
+            # Show final values after editing
+            display_ship_software()
+        else:
+            print("\nInvalid choice!")
 
 def main():
     """Main entry point for the save game editor."""
