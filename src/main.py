@@ -249,10 +249,7 @@ def get_crew_addresses():
         # Use globals() to look up constants by constructed name
         crew_addrs[crew_num] = {
             'rank': globals()[f"{prefix}RANK_ADDR"],
-                'hp': {
-                    'start': globals()[f"{prefix}HP_START"],
-                    'length': globals()[f"{prefix}HP_LENGTH"]
-                },
+            'hp': globals()[f"{prefix}HP_ADDR"],
             'characteristics': {
                 'strength': globals()[f"{prefix}STRENGTH_ADDR"],
                 'stamina': globals()[f"{prefix}STAMINA_ADDR"],
@@ -320,10 +317,7 @@ def load_save_game(filename: str) -> dict:
             
             # Basic stats
             save_data['crew'][crew_num]['rank'] = read_byte(f, addrs['rank'])
-            save_data['crew'][crew_num]['hp'] = read_multi_bytes(f, 
-                addrs['hp']['start'], 
-                addrs['hp']['length']
-            )
+            save_data['crew'][crew_num]['hp'] = read_byte(f, addrs['hp'])
             
             # Characteristics
             for stat, addr in addrs['characteristics'].items():
@@ -384,7 +378,7 @@ def save_game(filename: str) -> bool:
                 
                 # Basic stats
                 write_byte(f, addrs['rank'], crew['rank'])
-                write_multi_bytes(f, addrs['hp']['start'], crew['hp'], crew_addrs[crew_num]['hp']['length'])
+                write_byte(f, addrs['hp'], crew['hp'])
                 
                 # Characteristics
                 for stat, addr in addrs['characteristics'].items():
