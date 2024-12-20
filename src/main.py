@@ -538,8 +538,7 @@ def handle_character_edit_menu(member_num: int) -> None:
         elif choice == '1':
             edit_characteristics(member_num)
         elif choice == '2':
-            # TODO: edit_abilities(member_num)
-            print("\nAbilities editing not yet implemented!")
+            edit_abilities(member_num)
         elif choice == '3':
             edit_hp(member_num)
         elif choice == '4':
@@ -608,6 +607,69 @@ def edit_characteristics(member_num: int) -> None:
         print("------------------")
         for stat, value in characteristics.items():
             print(f"{stat.capitalize():>11}: {value}")
+    else:
+        print("\nNo changes made.")
+
+def edit_abilities(member_num: int) -> None:
+    """
+    Edit the abilities for a specific crew member.
+    Handles input validation and updates the changes flag if modified.
+    All abilities are single byte values (0-254).
+    
+    Args:
+        member_num: The crew member number (1-5) to edit
+    """
+    abilities = save_game_data['crew'][member_num]['abilities']
+    
+    print(f"\nEditing abilities for crew member {member_num}")
+    print("\nNote: A value of 20 is considered 'perfect' in-game, though values can go up to 254.")
+    print("\nCurrent abilities:")
+    print("----------------")
+    
+    # Display current values
+    for ability, value in abilities.items():
+        print(f"{ability.capitalize():>11}: {value}")
+        
+    print("\nPress Enter at any prompt to keep current value.")
+    
+    # Track if we've made any changes
+    made_changes = False
+    
+    # Edit each ability in sequence
+    for ability in abilities:
+        current_value = abilities[ability]
+        
+        while True:
+            try:
+                new_value = input(f"\nEnter new {ability.capitalize()} value (0-254) [{current_value}]: ")
+                
+                # Handle empty input (keep current value)
+                if not new_value:
+                    break
+                    
+                # Convert and validate input
+                new_value = int(new_value)
+                if 0 <= new_value <= MAX_STAT:
+                    if new_value != current_value:
+                        abilities[ability] = new_value
+                        made_changes = True
+                    break
+                else:
+                    print(f"Error: Value must be between 0 and {MAX_STAT}")
+                    
+            except ValueError:
+                print("Error: Please enter a valid number")
+    
+    # Only set app_state changes flag if we actually changed something
+    if made_changes:
+        app_state['has_changes'] = True
+        print("\nAbilities updated!")
+        
+        # Show final values after editing
+        print("\nNew abilities:")
+        print("-------------")
+        for ability, value in abilities.items():
+            print(f"{ability.capitalize():>11}: {value}")
     else:
         print("\nNo changes made.")
 
