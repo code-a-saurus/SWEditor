@@ -21,6 +21,7 @@ import os
 import sys
 from typing import Optional, Dict, List
 from sw_constants import * # Imports all our game constants
+from inventory_constants import ITEM_NAMES, VALID_ARMOR, VALID_WEAPONS
 
 # Constants for file operations
 SAVE_FILE_A = "test_data/gamea.fm"
@@ -542,8 +543,126 @@ def handle_character_edit_menu(member_num: int) -> None:
         elif choice == '3':
             edit_hp(member_num)
         elif choice == '4':
-            # TODO: edit_equipment(member_num)
-            print("\nEquipment editing not yet implemented!")
+            edit_equipment(member_num)
+        else:
+            print("\nInvalid choice!")
+
+def display_equipment(member_num: int) -> None:
+    """Display all equipment for the specified crew member."""
+    equipment = save_game_data['crew'][member_num]['equipment']
+    
+    print(f"\nEquipment for crew member {member_num}:")
+    print("=" * 40)
+    print(f"Equipped Armor: [{hex(equipment['armor'])}] {ITEM_NAMES[equipment['armor']]}")
+    print(f"Equipped Weapon: [{hex(equipment['weapon'])}] {ITEM_NAMES[equipment['weapon']]}")
+    
+    print("\nOn-hand Weapons:")
+    print("-" * 40)
+    for i, weapon in enumerate(equipment['onhand_weapons'], 1):
+        print(f"{i}) [{hex(weapon)}] {ITEM_NAMES[weapon]}")
+        
+    print("\nInventory:")
+    print("-" * 40)
+    for i, item in enumerate(equipment['inventory'], 1):
+        print(f"{i}) [{hex(item)}] {ITEM_NAMES[item]}")
+
+def get_item_code(prompt: str, valid_items: set) -> int:
+    """
+    Get a valid item code from user input.
+    
+    Args:
+        prompt: The prompt to show the user
+        valid_items: Set of valid item codes for this slot
+        
+    Returns:
+        int: The validated item code
+    """
+    while True:
+        try:
+            value = input(prompt)
+            
+            # Allow empty input to keep current item
+            if not value:
+                return None
+                
+            # Handle both "0x" prefix and raw hex strings
+            if value.startswith("0x"):
+                item_code = int(value, 16)
+            else:
+                item_code = int(value, 16)
+                
+            if item_code in valid_items:
+                print(f"Selected: {ITEM_NAMES[item_code]}")
+                return item_code
+            else:
+                print("Error: Invalid item code for this slot")
+                
+        except ValueError:
+            print("Error: Please enter a valid hexadecimal code")
+
+def edit_equipment(member_num: int) -> None:
+    """Edit equipment for the specified crew member."""
+    equipment = save_game_data['crew'][member_num]['equipment']
+    made_changes = False
+    
+    while True:
+        display_equipment(member_num)
+        print("\nE) Edit equipment")
+        print("R) Return to previous menu")
+        
+        choice = input("\nChoice: ").upper()
+        
+        if choice == 'R':
+            return
+        elif choice == 'E':
+            print("\nPress Enter at any prompt to keep current item.")
+            print("Enter item code in hex (e.g., 2F or 0x2F)")
+            
+            # Edit armor
+            new_armor = get_item_code(
+                f"\nEnter armor code [{hex(equipment['armor'])}]: ",
+                VALID_ARMOR
+            )
+            if new_armor is not None:
+                equipment['armor'] = new_armor
+                made_changes = True
+            
+            # Edit equipped weapon
+            new_weapon = get_item_code(
+                f"\nEnter weapon code [{hex(equipment['weapon'])}]: ",
+                VALID_WEAPONS
+            )
+            if new_weapon is not None:
+                equipment['weapon'] = new_weapon
+                made_changes = True
+            
+            # Edit on-hand weapons
+            print("\nOn-hand weapons:")
+            for i, current_weapon in enumerate(equipment['onhand_weapons']):
+                new_weapon = get_item_code(
+                    f"Enter weapon {i+1} code [{hex(current_weapon)}]: ",
+                    VALID_WEAPONS.union({EMPTY_SLOT})  # Can be empty or weapon
+                )
+                if new_weapon is not None:
+                    equipment['onhand_weapons'][i] = new_weapon
+                    made_changes = True
+            
+            # Edit inventory
+            print("\nInventory:")
+            for i, current_item in enumerate(equipment['inventory']):
+                new_item = get_item_code(
+                    f"Enter inventory {i+1} code [{hex(current_item)}]: ",
+                    VALID_INVENTORY  # Can be any valid item including EMPTY_SLOT
+                )
+                if new_item is not None:
+                    equipment['inventory'][i] = new_item
+                    made_changes = True
+            
+            if made_changes:
+                app_state['has_changes'] = True
+                print("\nEquipment updated!")
+            else:
+                print("\nNo changes made.")
         else:
             print("\nInvalid choice!")
 
