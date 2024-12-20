@@ -536,8 +536,7 @@ def handle_character_edit_menu(member_num: int) -> None:
             return
             
         elif choice == '1':
-            # TODO: edit_characteristics(member_num)
-            print("\nCharacteristics editing not yet implemented!")
+            edit_characteristics(member_num)
         elif choice == '2':
             # TODO: edit_abilities(member_num)
             print("\nAbilities editing not yet implemented!")
@@ -548,6 +547,69 @@ def handle_character_edit_menu(member_num: int) -> None:
             print("\nEquipment editing not yet implemented!")
         else:
             print("\nInvalid choice!")
+
+def edit_characteristics(member_num: int) -> None:
+    """
+    Edit the characteristics (Strength, Stamina, etc) for a specific crew member.
+    Handles input validation and updates the changes flag if modified.
+    All characteristics are single byte values (0-254).
+    
+    Args:
+        member_num: The crew member number (1-5) to edit
+    """
+    characteristics = save_game_data['crew'][member_num]['characteristics']
+    
+    print(f"\nEditing characteristics for crew member {member_num}")
+    print("\nNote: A value of 20 is considered 'perfect' in-game, though values can go up to 254.")
+    print("\nCurrent characteristics:")
+    print("----------------------")
+    
+    # Display current values
+    for stat, value in characteristics.items():
+        print(f"{stat.capitalize():>11}: {value}")
+        
+    print("\nPress Enter at any prompt to keep current value.")
+    
+    # Track if we've made any changes
+    made_changes = False
+    
+    # Edit each characteristic in sequence
+    for stat in characteristics:
+        current_value = characteristics[stat]
+        
+        while True:
+            try:
+                new_value = input(f"\nEnter new {stat.capitalize()} value (0-254) [{current_value}]: ")
+                
+                # Handle empty input (keep current value)
+                if not new_value:
+                    break
+                    
+                # Convert and validate input
+                new_value = int(new_value)
+                if 0 <= new_value <= MAX_STAT:
+                    if new_value != current_value:
+                        characteristics[stat] = new_value
+                        made_changes = True
+                    break
+                else:
+                    print(f"Error: Value must be between 0 and {MAX_STAT}")
+                    
+            except ValueError:
+                print("Error: Please enter a valid number")
+    
+    # Only set app_state changes flag if we actually changed something
+    if made_changes:
+        app_state['has_changes'] = True
+        print("\nCharacteristics updated!")
+        
+        # Show final values after editing
+        print("\nNew characteristics:")
+        print("------------------")
+        for stat, value in characteristics.items():
+            print(f"{stat.capitalize():>11}: {value}")
+    else:
+        print("\nNo changes made.")
 
 def edit_hp(member_num: int) -> None:
     """
