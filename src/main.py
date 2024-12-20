@@ -559,6 +559,7 @@ def edit_hp(member_num: int) -> None:
     """
     Edit the HP value for a specific crew member.
     Handles input validation and updates the changes flag if modified.
+    HP is a single byte value (0-255).
     
     Args:
         member_num: The crew member number (1-5) to edit
