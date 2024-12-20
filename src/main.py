@@ -66,6 +66,12 @@ def read_byte(file_handle, address: int) -> int:
     file_handle.seek(address)
     return int.from_bytes(file_handle.read(1), byteorder='little')
 
+    # TODO: Fold read_byte and read_multi_bytes into one "read_bytes"
+    # function that either knows to use 1- and 3-byte reads where 
+    # appropriate, or that takes an input on how many bytes to read
+    # (and perhaps defaults to 1 if no input is given, so we don't have
+    # to change many existing reads).
+
 def read_multi_bytes(file_handle, address: int, num_bytes: int) -> int:
     """
     Read multiple bytes from a specific address in little-endian format.
@@ -98,6 +104,12 @@ def read_multi_bytes(file_handle, address: int, num_bytes: int) -> int:
     # Convert the bytes to an integer using little-endian format
     return int.from_bytes(bytes_data, byteorder='little')
 
+    # TODO: Fold read_byte and read_multi_bytes into one "read_bytes"
+    # function that either knows to use 1- and 3-byte reads where 
+    # appropriate, or that takes an input on how many bytes to read
+    # (and perhaps defaults to 1 if no input is given, so we don't have
+    # to change many existing reads).
+
 def write_byte(file_handle, address: int, value: int):
     """
     Write a single byte to a specific address in the save game file.
@@ -113,11 +125,20 @@ def write_byte(file_handle, address: int, value: int):
     if not 0 <= value <= 255:
         raise ValueError(f"Byte value {value} at address {hex(address)} is outside valid range (0-255)")
     
-    # TODO: Future improvement - compare value against current byte on disk
-    # to determine if write is actually needed
-    
     file_handle.seek(address)
     file_handle.write(bytes([value]))
+
+    # TODO 1: Fold write_byte and write_multi_bytes into one "write_bytes"
+    # function that either knows to use 1- and 3-byte writes where 
+    # appropriate because we pre-define which attributes need it, or that
+    # takes an input on how many bytes to write (and perhaps defaults to
+    # 1 if no input is given, so we don't have to change many existing writes).
+    #
+    # TODO 2: As a future improvement to this future "write_bytes" function,
+    # we could compare each given value in memory against the value's current
+    # byte(s) on disk to determine if write is actually needed, rather than our
+    # current method of just writing everything on save. On the other hand,
+    # that sounds like it might be a lot of work.
 
 def write_multi_bytes(file_handle, address: int, value: int, num_bytes: int):
     """
@@ -147,6 +168,18 @@ def write_multi_bytes(file_handle, address: int, value: int, num_bytes: int):
     # Seek to address and write bytes
     file_handle.seek(address)
     file_handle.write(value_bytes)
+
+    # TODO 1: Fold write_byte and write_multi_bytes into one "write_bytes"
+    # function that either knows to use 1- and 3-byte writes where 
+    # appropriate because we pre-define which attributes need it, or that
+    # takes an input on how many bytes to write (and perhaps defaults to
+    # 1 if no input is given, so we don't have to change many existing writes).
+    #
+    # TODO 2: As a future improvement to this future "write_bytes" function,
+    # we could compare each given value in memory against the value's current
+    # byte(s) on disk to determine if write is actually needed, rather than our
+    # current method of just writing everything on save. On the other hand,
+    # that sounds like it might be a lot of work.
 
 def initialize_save_data() -> dict:
     """
