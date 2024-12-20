@@ -21,7 +21,7 @@ import os
 import sys
 from typing import Optional, Dict, List
 from sw_constants import * # Imports all our game constants
-from inventory_constants import ITEM_NAMES, VALID_ARMOR, VALID_WEAPONS
+from inventory_constants import ITEM_NAMES, VALID_INVENTORY, VALID_ARMOR, VALID_WEAPONS
 
 # Constants for file operations
 SAVE_FILE_A = "test_data/gamea.fm"
