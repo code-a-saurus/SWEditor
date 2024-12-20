@@ -507,6 +507,51 @@ def handle_party_select_menu() -> Optional[int]:
         except ValueError:
             print("\nInvalid choice! Please select 1-5 or R to return.")
 
+def display_character_edit_menu(member_num: int) -> None:
+    """
+    Display the character editing menu for a specific party member.
+    
+    Args:
+        member_num: The party member number (1-5) being edited
+    """
+    print(f"\nEditing party member {member_num}:")
+    print("1) Edit characteristics")
+    print("2) Edit abilities")
+    print("3) Edit HP")
+    print("4) Edit equipment")
+    print("R) Return to party select menu")
+
+    # TODO: Extract and display party member name 
+    
+def handle_character_edit_menu(member_num: int) -> None:
+    """
+    Handle user input for the character edit menu.
+    
+    Args:
+        member_num: The party member number (1-5) being edited
+    """
+    while True:
+        display_character_edit_menu(member_num)
+        choice = input("\nEnter choice: ").upper()
+        
+        if choice == 'R':
+            return
+            
+        elif choice == '1':
+            # TODO: edit_characteristics(member_num)
+            print("\nCharacteristics editing not yet implemented!")
+        elif choice == '2':
+            # TODO: edit_abilities(member_num)
+            print("\nAbilities editing not yet implemented!")
+        elif choice == '3':
+            # TODO: edit_hp(member_num)
+            print("\nHP editing not yet implemented!")
+        elif choice == '4':
+            # TODO: edit_equipment(member_num)
+            print("\nEquipment editing not yet implemented!")
+        else:
+            print("\nInvalid choice!")
+
 def edit_ship_software() -> None:
     """Edit ship software values."""
     while True:
