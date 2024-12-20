@@ -456,8 +456,9 @@ def handle_main_menu() -> bool:
         edit_ship_software()
         return True
     elif choice == '4':
-        # TODO: Implement edit party member stats
-        print("\nEditing party member stats not yet implemented!")
+        member_num = handle_party_select_menu()
+        if member_num:  # Only proceed if a member was selected
+            handle_character_edit_menu(member_num)
         return True
     else:
         print("\nInvalid choice!")
@@ -522,7 +523,7 @@ def display_character_edit_menu(member_num: int) -> None:
     print("R) Return to party select menu")
 
     # TODO: Extract and display party member name 
-    
+
 def handle_character_edit_menu(member_num: int) -> None:
     """
     Handle user input for the character edit menu.
