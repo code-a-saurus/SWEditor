@@ -9,8 +9,8 @@ import sys
 from typing import Dict, Any
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from main import load_save_game, initialize_save_data, SAVE_FILE_A, SAVE_FILE_B
-from inventory_constants import ITEM_NAMES
+from src.main import load_save_game, initialize_save_data, SAVE_FILE_A, SAVE_FILE_B
+from src.inventory_constants import ITEM_NAMES
 
 def format_dict(d: Dict[str, Any], indent: int = 0) -> str:
     """Format a nested dictionary for pretty printing."""
