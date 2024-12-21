@@ -12,5 +12,12 @@ The editor can modify:
 - Ship software levels
 
 ### Usage:
-Run the script and follow the interactive prompts to edit either
-GAMEA.FM or GAMEB.FM save files.
+Run the script and follow the interactive prompts to edit your SW1 saves.
+
+You currently need to provide your own GAMEA.FM and GAMEB.FM files.
+
+The files currently need to be located in a directory named /test_data/
+beneath the project root directory, and they need to be named GAMEA.FM
+and GAMEB.FM.
+
+Everything should work. It's been mostly tested.
