@@ -1,5 +1,5 @@
 ## Sentinel Worlds I: Future Magic save game editor
-Version: 1.0
+Version: 0.1a
 
 Author: Lee Hutchinson
 
