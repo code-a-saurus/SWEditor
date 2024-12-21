@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Sentinel Worlds I: Future Magic Save Game Editor
-Version: 1.0
+Version: 0.1a
 Author: Lee Hutchinson
 
 This script provides a command-line interface for editing save game files
