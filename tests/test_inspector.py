@@ -2,6 +2,10 @@
 """
 Sentinel Worlds I: Future Magic Save Game Inspector
 A test script that reads and displays all values from a save game file
+
+This file is part of a project licensed under the GNU General Public License v3.
+See the LICENSE file in the root directory or <https://www.gnu.org/licenses/>.
+
 """
 
 import os
