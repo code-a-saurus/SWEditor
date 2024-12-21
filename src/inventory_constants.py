@@ -188,4 +188,4 @@ VALID_INVENTORY = {
     NANOBOT,           # 0x21
     MARK_V_TENG,       # 0x22
     VADROXON,          # 0x23
-}.union(VALID_WEAPONS, VALID_ARMOR, VALID_AMMO)  # Can also store weapons/armor/ammo in inventory
+}.union(VALID_AMMO)  # Can also store weapons/armor/ammo in inventory
