@@ -11,7 +11,7 @@ The editor can modify:
 - Individual character stats, abilities, and inventory
 - Ship software levels
 
-### Usage:
+### Usage
 Run the script and follow the interactive prompts to edit your SW1 saves.
 
 You currently need to provide your own GAMEA.FM and GAMEB.FM files.
@@ -21,3 +21,7 @@ beneath the project root directory, and they need to be named GAMEA.FM
 and GAMEB.FM.
 
 Everything should work. It's been mostly tested.
+
+### License
+This project is licensed under the terms of the GNU General Public License
+v3.0. See the LICENSE file for details.
