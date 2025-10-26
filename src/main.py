@@ -66,37 +66,17 @@ def get_save_file_choice() -> Optional[str]:
     else:
         return None
 
-def read_byte(file_handle, address: int) -> int:
+def read_bytes(file_handle, address: int, num_bytes: int = 1) -> int:
     """
-    Read a single byte from a specific address in the save game file.
-    
+    Read one or more bytes from a specific address in the save game file.
+
     Args:
         file_handle: An open file handle in binary read mode
         address: The hex address to read from
-        
-    Returns:
-        int: The byte value at that address converted to integer
-    """
-    file_handle.seek(address)
-    return int.from_bytes(file_handle.read(1), byteorder='little')
-
-    # TODO: Fold read_byte and read_multi_bytes into one "read_bytes"
-    # function that either knows to use 1- and 3-byte reads where 
-    # appropriate, or that takes an input on how many bytes to read
-    # (and perhaps defaults to 1 if no input is given, so we don't have
-    # to change many existing reads).
-
-def read_multi_bytes(file_handle, address: int, num_bytes: int) -> int:
-    """
-    Read multiple bytes from a specific address in little-endian format.
-
-    Args:
-        file_handle: An open file handle in binary read mode
-        address: The starting hex address to read from
-        num_bytes: Number of consecutive bytes to read
+        num_bytes: Number of consecutive bytes to read (default: 1)
 
     Returns:
-        int: The combined value of the bytes as an integer
+        int: The byte value(s) at that address converted to integer in little-endian format
 
     Raises:
         IOError: If there are problems reading from the file
@@ -117,12 +97,6 @@ def read_multi_bytes(file_handle, address: int, num_bytes: int) -> int:
 
     # Convert the bytes to an integer using little-endian format
     return int.from_bytes(bytes_data, byteorder='little')
-
-    # TODO: Fold read_byte and read_multi_bytes into one "read_bytes"
-    # function that either knows to use 1- and 3-byte reads where
-    # appropriate, or that takes an input on how many bytes to read
-    # (and perhaps defaults to 1 if no input is given, so we don't have
-    # to change many existing reads).
 
 def read_string(file_handle, address: int, length: int) -> str:
     """
@@ -149,76 +123,34 @@ def read_string(file_handle, address: int, length: int) -> str:
     # Decode as ASCII and strip trailing spaces
     return bytes_data.decode('ascii', errors='replace').rstrip()
 
-def write_byte(file_handle, address: int, value: int):
+def write_bytes(file_handle, address: int, value: int, num_bytes: int = 1):
     """
-    Write a single byte to a specific address in the save game file.
-    
-    Args:
-        file_handle: An open file handle in binary write mode
-        address: The hex address to write to
-        value: The value to write (must be 0-255)
-        
-    Raises:
-        ValueError: If value is outside valid byte range
-    """
-    if not 0 <= value <= 255:
-        raise ValueError(f"Byte value {value} at address {hex(address)} is outside valid range (0-255)")
-    
-    file_handle.seek(address)
-    file_handle.write(bytes([value]))
+    Write one or more bytes to a specific address in the save game file.
 
-    # TODO 1: Fold write_byte and write_multi_bytes into one "write_bytes"
-    # function that either knows to use 1- and 3-byte writes where 
-    # appropriate because we pre-define which attributes need it, or that
-    # takes an input on how many bytes to write (and perhaps defaults to
-    # 1 if no input is given, so we don't have to change many existing writes).
-    #
-    # TODO 2: As a future improvement to this future "write_bytes" function,
-    # we could compare each given value in memory against the value's current
-    # byte(s) on disk to determine if write is actually needed, rather than our
-    # current method of just writing everything on save. On the other hand,
-    # that sounds like it might be a lot of work.
-
-def write_multi_bytes(file_handle, address: int, value: int, num_bytes: int):
-    """
-    Write multiple bytes to a specific address in little-endian format.
-    
     Args:
         file_handle: An open file handle in binary write mode
         address: The hex address to write to
         value: The integer value to write
-        num_bytes: Number of bytes to write
-        
+        num_bytes: Number of bytes to write (default: 1)
+
     Raises:
         ValueError: If value won't fit in num_bytes or if num_bytes < 1
     """
     if num_bytes < 1:
         raise ValueError("Number of bytes to write must be positive")
-        
+
     # Calculate maximum value that can fit in num_bytes
     max_value = (256 ** num_bytes) - 1
-    
+
     if not 0 <= value <= max_value:
         raise ValueError(f"Value {value} is too large for {num_bytes} bytes (max: {max_value})")
-    
+
     # Convert value to bytes in little-endian format
     value_bytes = value.to_bytes(num_bytes, byteorder='little')
-    
+
     # Seek to address and write bytes
     file_handle.seek(address)
     file_handle.write(value_bytes)
-
-    # TODO 1: Fold write_byte and write_multi_bytes into one "write_bytes"
-    # function that either knows to use 1- and 3-byte writes where
-    # appropriate because we pre-define which attributes need it, or that
-    # takes an input on how many bytes to write (and perhaps defaults to
-    # 1 if no input is given, so we don't have to change many existing writes).
-    #
-    # TODO 2: As a future improvement to this future "write_bytes" function,
-    # we could compare each given value in memory against the value's current
-    # byte(s) on disk to determine if write is actually needed, rather than our
-    # current method of just writing everything on save. On the other hand,
-    # that sounds like it might be a lot of work.
 
 def write_string(file_handle, address: int, value: str, length: int):
     """
@@ -365,14 +297,14 @@ def load_save_game(filename: str) -> dict:
     
     with open(filename, 'rb') as f:
         # Load party-wide values
-        save_data['party']['cash'] = read_multi_bytes(f, PARTY_CASH_ADDR, PARTY_CASH_LENGTH)
-        save_data['party']['light_energy'] = read_byte(f, PARTY_LIGHT_ENERGY_ADDR)
-        
+        save_data['party']['cash'] = read_bytes(f, PARTY_CASH_ADDR, PARTY_CASH_LENGTH)
+        save_data['party']['light_energy'] = read_bytes(f, PARTY_LIGHT_ENERGY_ADDR)
+
         # Load ship software values
-        save_data['ship']['move'] = read_byte(f, SHIP_MOVE_ADDR)
-        save_data['ship']['target'] = read_byte(f, SHIP_TARGET_ADDR)
-        save_data['ship']['engine'] = read_byte(f, SHIP_ENGINE_ADDR)
-        save_data['ship']['laser'] = read_byte(f, SHIP_LASER_ADDR)
+        save_data['ship']['move'] = read_bytes(f, SHIP_MOVE_ADDR)
+        save_data['ship']['target'] = read_bytes(f, SHIP_TARGET_ADDR)
+        save_data['ship']['engine'] = read_bytes(f, SHIP_ENGINE_ADDR)
+        save_data['ship']['laser'] = read_bytes(f, SHIP_LASER_ADDR)
         
         # Define addresses for all crew members
         crew_addrs = get_crew_addresses()
@@ -385,30 +317,30 @@ def load_save_game(filename: str) -> dict:
             save_data['crew'][crew_num]['name'] = read_string(f, addrs['name'], addrs['name_length'])
 
             # Basic stats
-            save_data['crew'][crew_num]['rank'] = read_byte(f, addrs['rank'])
-            save_data['crew'][crew_num]['hp'] = read_byte(f, addrs['hp'])
-            
+            save_data['crew'][crew_num]['rank'] = read_bytes(f, addrs['rank'])
+            save_data['crew'][crew_num]['hp'] = read_bytes(f, addrs['hp'])
+
             # Characteristics
             for stat, addr in addrs['characteristics'].items():
-                save_data['crew'][crew_num]['characteristics'][stat] = read_byte(f, addr)
-            
+                save_data['crew'][crew_num]['characteristics'][stat] = read_bytes(f, addr)
+
             # Abilities
             for ability, addr in addrs['abilities'].items():
-                save_data['crew'][crew_num]['abilities'][ability] = read_byte(f, addr)
-            
+                save_data['crew'][crew_num]['abilities'][ability] = read_bytes(f, addr)
+
             # Equipment
-            save_data['crew'][crew_num]['equipment']['armor'] = read_byte(f, addrs['equipment']['armor'])
-            save_data['crew'][crew_num]['equipment']['weapon'] = read_byte(f, addrs['equipment']['weapon'])
-            
+            save_data['crew'][crew_num]['equipment']['armor'] = read_bytes(f, addrs['equipment']['armor'])
+            save_data['crew'][crew_num]['equipment']['weapon'] = read_bytes(f, addrs['equipment']['weapon'])
+
             # Load onhand weapons (3 consecutive bytes)
             for i in range(3):
                 save_data['crew'][crew_num]['equipment']['onhand_weapons'][i] = \
-                    read_byte(f, addrs['equipment']['onhand_weapons_start'] + i)
-            
+                    read_bytes(f, addrs['equipment']['onhand_weapons_start'] + i)
+
             # Load inventory (8 consecutive bytes)
             for i in range(8):
                 save_data['crew'][crew_num]['equipment']['inventory'][i] = \
-                    read_byte(f, addrs['equipment']['inventory_start'] + i)
+                    read_bytes(f, addrs['equipment']['inventory_start'] + i)
     
     return save_data
 
@@ -428,14 +360,14 @@ def save_game(filename: str) -> bool:
     try:
         with open(filename, 'rb+') as f:  # Note: binary read+write mode
             # Save party-wide values
-            write_multi_bytes(f, PARTY_CASH_ADDR, save_game_data['party']['cash'], PARTY_CASH_LENGTH)
-            write_byte(f, PARTY_LIGHT_ENERGY_ADDR, save_game_data['party']['light_energy'])
-            
+            write_bytes(f, PARTY_CASH_ADDR, save_game_data['party']['cash'], PARTY_CASH_LENGTH)
+            write_bytes(f, PARTY_LIGHT_ENERGY_ADDR, save_game_data['party']['light_energy'])
+
             # Save ship software values
-            write_byte(f, SHIP_MOVE_ADDR, save_game_data['ship']['move'])
-            write_byte(f, SHIP_TARGET_ADDR, save_game_data['ship']['target'])
-            write_byte(f, SHIP_ENGINE_ADDR, save_game_data['ship']['engine'])
-            write_byte(f, SHIP_LASER_ADDR, save_game_data['ship']['laser'])
+            write_bytes(f, SHIP_MOVE_ADDR, save_game_data['ship']['move'])
+            write_bytes(f, SHIP_TARGET_ADDR, save_game_data['ship']['target'])
+            write_bytes(f, SHIP_ENGINE_ADDR, save_game_data['ship']['engine'])
+            write_bytes(f, SHIP_LASER_ADDR, save_game_data['ship']['laser'])
             
             # Get crew addresses mapping
             crew_addrs = get_crew_addresses()
@@ -449,29 +381,29 @@ def save_game(filename: str) -> bool:
                 write_string(f, addrs['name'], crew['name'], addrs['name_length'])
 
                 # Basic stats
-                write_byte(f, addrs['rank'], crew['rank'])
-                write_byte(f, addrs['hp'], crew['hp'])
-                
+                write_bytes(f, addrs['rank'], crew['rank'])
+                write_bytes(f, addrs['hp'], crew['hp'])
+
                 # Characteristics
                 for stat, addr in addrs['characteristics'].items():
-                    write_byte(f, addr, crew['characteristics'][stat])
-                
+                    write_bytes(f, addr, crew['characteristics'][stat])
+
                 # Abilities
                 for ability, addr in addrs['abilities'].items():
-                    write_byte(f, addr, crew['abilities'][ability])
-                
+                    write_bytes(f, addr, crew['abilities'][ability])
+
                 # Equipment
-                write_byte(f, addrs['equipment']['armor'], crew['equipment']['armor'])
-                write_byte(f, addrs['equipment']['weapon'], crew['equipment']['weapon'])
-                
+                write_bytes(f, addrs['equipment']['armor'], crew['equipment']['armor'])
+                write_bytes(f, addrs['equipment']['weapon'], crew['equipment']['weapon'])
+
                 # Save onhand weapons (3 consecutive bytes)
                 for i in range(3):
-                    write_byte(f, addrs['equipment']['onhand_weapons_start'] + i,
+                    write_bytes(f, addrs['equipment']['onhand_weapons_start'] + i,
                              crew['equipment']['onhand_weapons'][i])
-                
+
                 # Save inventory (8 consecutive bytes)
                 for i in range(8):
-                    write_byte(f, addrs['equipment']['inventory_start'] + i,
+                    write_bytes(f, addrs['equipment']['inventory_start'] + i,
                              crew['equipment']['inventory'][i])
                              
         app_state['has_changes'] = False  # Clear the changes flag

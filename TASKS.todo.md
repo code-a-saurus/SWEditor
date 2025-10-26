@@ -16,7 +16,20 @@
 - "Edit HP" is implemented and functional.
 - "Edit Abilities" is implemented and functional.
 - "Edit equipment" is implemented and functional.
+- **NEW: Added character name support**
+  - Added name address constants for all 5 crew members to sw_constants.py
+  - Created read_string() and write_string() functions for handling ASCII strings
+  - Updated data structures to include 'name' field for each crew member
+  - Modified load_save_game() to read character names from save files
+  - Modified save_game() to write character names back to save files
+  - Updated all display menus to show character names alongside crew member numbers
+  - Character names now appear in: party select menu, character edit menu, equipment display, characteristics editing, abilities editing, and HP editing
+- **NEW: Consolidated read/write functions (completed TODOs #1 and #2)**
+  - Created unified read_bytes() function (replaces read_byte() and read_multi_bytes())
+  - Created unified write_bytes() function (replaces write_byte() and write_multi_bytes())
+  - Both new functions use default parameter num_bytes=1 for single-byte operations
+  - Updated all function calls throughout the codebase to use the new unified functions
+  - Removed duplicate code and improved maintainability
 
 ## What to do next:
-- There are multiple TODOs in the main.py code. I'd suggest those.
-- UX/UI needs huge improvements. This is a good place to focuc.
+- UX/UI needs huge improvements. This is a good place to focus.
