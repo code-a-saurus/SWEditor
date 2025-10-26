@@ -1,0 +1,240 @@
+sw hex values
+
+Save game filenames are "GAMEA.FM" and "GAMEB.FM".
+
+LOCATIONS OF STUFF IN GAMEA.FM and GAMEB.FM:
+(Note: 1,2,3,4 and 5 refer to crew-
+members in position 1, position 2, and
+so on)
+
+Party's current cash:
+0x024C-E
+--Safe high value is FF FF 09 for 655,359 credits
+
+Rank:
+Crew person 1=0x023B
+Crew person 2=0x02FB
+Crew person 3=0x03BB
+Crew person 4=0x047B
+Crew person 5=0x053B
+--15 for Fleet Captain
+
+Characteristics:
+Crew person 1=0x0230-4
+Crew person 2=0x02F0-4
+Crew person 3=0x03B0-4
+Crew person 4=0x0470-4
+Crew person 5=0x0530-4
+--Characteristics:
+0 - Strength
+1 - Stamina
+2 - Dexterity
+3 - Comprehend
+4 - Charisma
+--For all 20s, set each to 14
+--Max is FF
+
+Abilities:
+Crew person 1=0x01D0-5, 0x01D8-D
+Crew person 2=0x0290-5, 0x0298-D
+Crew person 3=0x0350-5, 0x0358-D
+Crew person 4=0x0410-5, 0x0418-D
+Crew person 5=0x04D0-5, 0x04D8-D
+--Abilities are, in order:
+Contact
+Edged
+Projectile
+Blaster
+Tactics
+Recon
+Gunnery
+ATV Repair
+Mining
+Athletics
+Observation
+Bribery
+--Range is 00-B-something...I set to 50
+
+Party's Light Energy:
+002358
+
+Hit points:
+Crew person 1=000235-7
+Crew person 2=0002F5-7
+Crew person 3=0003B5-7
+Crew person 4=000475-7
+Crew person 5=000353-7
+--Max allowable HP = 60 7D 7D (125)
+
+Armor:
+Crew person 1=000262
+Crew person 2=000322
+Crew person 3=0003E2
+Crew person 4=0004A2
+Crew person 5=000562
+--Recommended armors:
+Special (2F)
+Ancient (06)
+Mysterious (04)
+Carbon Armor (2D)
+
+Eqipped Weapon:
+Crew person 1=000263
+Crew person 2=000323
+Crew person 3=0003E3
+Crew person 4=0004A3
+Crew person 5=000563
+--Recommended weapons:
+Neutron Gun (1B)
+Neuron Flail (0C)
+Edge Spinner (11)
+Thermocaster (17)
+
+On-Hand weapons:
+Crew person 1=000265-7
+Crew person 2=000325-7
+Crew person 3=0003E5-7
+Crew person 4=0004A5-7
+Crew person 5=000565-7
+
+Inventory:
+Crew person 1=000220-7
+Crew person 2=0002E0-7
+Crew person 3=0003A0-7
+Crew person 4=000460-7
+Crew person 5=000520-7
+--Quick reference:
+Crysprism = 36
+Therm Pak = 35
+
+Ship software:
+  Move = 0x25E8
+Target = 0x25E9
+Engine = 0x25EA
+ Laser = 0x25EB
+--Settings past 08 don't seem to do anything, so set to 08
+
+Inventory Items:
+FF = empty spot
+00 = burbulator
+01 = EA passcard
+02 = trinoculars
+03 = arisian lens
+04 = mysterious
+05 = energy ball
+06 = ancient
+07 = book
+08 = hands
+09 = powerfist
+0A = sonic mace
+0B = gyro pike
+0C = neuron flail
+0D = dagger
+0E = cryo cutlas
+0F = power axe
+10 = energy blade
+11 = edge spinner
+12 = auto pistol
+13 = shotgun
+14 = hyperuzi
+15 = AK-4700
+16 = gauss rifle
+17 = thermocaster
+18 = hand laser
+19 = LR laser
+1A = plasma gun
+1B = neutron gun
+1C = claws
+1D = teeth
+1E = thrasher
+1F = acid breath
+20 = tesselator
+21 = nanobot
+22 = mark V teng
+23 = vadroxon
+24 = uniform
+25 = flight jacket
+26 = steel mesh
+27 = flak jacket
+28 = laser reflec
+29 = combat armor
+2A = thick skin
+2B = rough skin
+2C = thick fur
+2D = carbon armor
+2E = civilian clothes
+2F = special
+30 = auto clip
+31 = shotgun pack
+32 = hyperuzi mag
+33 = gauss rifle mag
+34 = AK-4700 mag
+35 = therm pak
+36 = crysprism
+37 = nerf cannon
+38 = kevlar suit
+39 = holophones
+3A = vax grapher
+3B = antique yoyo
+3C = cryoscope
+3D = cyberdisk
+3E = szart needle
+3F = knarlybar
+40 = (nothing)
+41 = (nothing)
+42 = (nothing)
+43 = (nothing)
+44 = (nothing)
+45 = (nothing)
+46 = (nothing)
+47 = (nothing)
+48 = hands (abbrev)
+49 = pwrfst (abbrev)
+4A = snmace (a)
+4B = gypike (a)
+4C = nflail (a)
+4D = dagger (a)
+4E = crycut (a)
+4F = powaxe (a)
+50 = enrbld (a)
+51 = edgspn (a)
+52 = apistl (a)
+53 = shtgun (a)
+54 = hypuzi (a)
+55 = ak4700 (a)
+56 = grifle (a)
+57 = thermo (a)
+58 = hlaser (a)
+59 = lrlasr (a)
+5A = plasgn (a)
+5B = neutgn (a)
+5C = cl (?)
+5D = te (?)
+5E = th (?)
+5F = br (?)
+60 = (nothing)
+61 = (nothing)
+62 = (nothing)
+63 = (nothing)
+64 = uniform (a)
+65 = flt jak (a)
+66 = st mesh (a)
+67 = flk jak (a)
+68 = lreflct (a)
+69 = cbt arm (a)
+6A = (nothing)
+6B = (nothing)
+6C = (nothing)
+6D = (nothing)
+6E = (nothing)
+6F = (nothing)
+70 = (nothing)
+71 = (nothing)
+72 = (nothing)
+73 = (nothing)
+74 = (nothing)
+75 = (nothing)
+76 = (nothing)
+77 = (nothing)
+78 = kevlar (a)
+>78 = locks up game if loaded
