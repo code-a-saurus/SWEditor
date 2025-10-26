@@ -616,8 +616,9 @@ def handle_character_edit_menu(member_num: int) -> None:
 def display_equipment(member_num: int) -> None:
     """Display all equipment for the specified crew member."""
     equipment = save_game_data['crew'][member_num]['equipment']
-    
-    print(f"\nEquipment for crew member {member_num}:")
+    crew_name = save_game_data['crew'][member_num]['name']
+
+    print(f"\nEquipment for {crew_name} (crew member {member_num}):")
     print("=" * 40)
     print(f"Equipped Armor: [{hex(equipment['armor'])}] {ITEM_NAMES[equipment['armor']]}")
     print(f"Equipped Weapon: [{hex(equipment['weapon'])}] {ITEM_NAMES[equipment['weapon']]}")
@@ -737,13 +738,14 @@ def edit_characteristics(member_num: int) -> None:
     Edit the characteristics (Strength, Stamina, etc) for a specific crew member.
     Handles input validation and updates the changes flag if modified.
     All characteristics are single byte values (0-254).
-    
+
     Args:
         member_num: The crew member number (1-5) to edit
     """
     characteristics = save_game_data['crew'][member_num]['characteristics']
-    
-    print(f"\nEditing characteristics for crew member {member_num}")
+    crew_name = save_game_data['crew'][member_num]['name']
+
+    print(f"\nEditing characteristics for {crew_name} (crew member {member_num})")
     print("\nNote: A value of 20 is considered 'perfect' in-game, though values can go up to 254.")
     print("\nCurrent characteristics:")
     print("----------------------")
@@ -800,13 +802,14 @@ def edit_abilities(member_num: int) -> None:
     Edit the abilities for a specific crew member.
     Handles input validation and updates the changes flag if modified.
     All abilities are single byte values (0-254).
-    
+
     Args:
         member_num: The crew member number (1-5) to edit
     """
     abilities = save_game_data['crew'][member_num]['abilities']
-    
-    print(f"\nEditing abilities for crew member {member_num}")
+    crew_name = save_game_data['crew'][member_num]['name']
+
+    print(f"\nEditing abilities for {crew_name} (crew member {member_num})")
     print("\nNote: A value of 20 is considered 'perfect' in-game, though values can go up to 254.")
     print("\nCurrent abilities:")
     print("----------------")
@@ -863,12 +866,13 @@ def edit_hp(member_num: int) -> None:
     Edit the HP value for a specific crew member.
     Handles input validation and updates the changes flag if modified.
     HP is a single byte value (0-255).
-    
+
     Args:
         member_num: The crew member number (1-5) to edit
     """
     current_hp = save_game_data['crew'][member_num]['hp']
-    print(f"\nCurrent HP for crew member {member_num}: {current_hp}")
+    crew_name = save_game_data['crew'][member_num]['name']
+    print(f"\nCurrent HP for {crew_name} (crew member {member_num}): {current_hp}")
     
     while True:
         try:
