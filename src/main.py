@@ -89,40 +89,65 @@ def read_byte(file_handle, address: int) -> int:
 def read_multi_bytes(file_handle, address: int, num_bytes: int) -> int:
     """
     Read multiple bytes from a specific address in little-endian format.
-    
+
     Args:
         file_handle: An open file handle in binary read mode
         address: The starting hex address to read from
         num_bytes: Number of consecutive bytes to read
-        
+
     Returns:
         int: The combined value of the bytes as an integer
-        
+
     Raises:
         IOError: If there are problems reading from the file
         ValueError: If num_bytes is less than 1
     """
     if num_bytes < 1:
         raise ValueError("Number of bytes to read must be positive")
-        
+
     # Seek to the starting address
     file_handle.seek(address)
-    
+
     # Read the specified number of bytes
     bytes_data = file_handle.read(num_bytes)
-    
+
     # Verify we got all the bytes we expected
     if len(bytes_data) != num_bytes:
         raise IOError(f"Could not read {num_bytes} bytes from address {hex(address)}")
-    
+
     # Convert the bytes to an integer using little-endian format
     return int.from_bytes(bytes_data, byteorder='little')
 
     # TODO: Fold read_byte and read_multi_bytes into one "read_bytes"
-    # function that either knows to use 1- and 3-byte reads where 
+    # function that either knows to use 1- and 3-byte reads where
     # appropriate, or that takes an input on how many bytes to read
     # (and perhaps defaults to 1 if no input is given, so we don't have
     # to change many existing reads).
+
+def read_string(file_handle, address: int, length: int) -> str:
+    """
+    Read a string from a specific address in the save game file.
+    The game stores strings as space-padded ASCII text.
+
+    Args:
+        file_handle: An open file handle in binary read mode
+        address: The hex address to read from
+        length: The number of bytes to read for the string
+
+    Returns:
+        str: The decoded string with trailing spaces removed
+
+    Raises:
+        IOError: If there are problems reading from the file
+    """
+    file_handle.seek(address)
+    bytes_data = file_handle.read(length)
+
+    if len(bytes_data) != length:
+        raise IOError(f"Could not read {length} bytes from address {hex(address)}")
+
+    # Decode as ASCII and strip trailing spaces
+    return bytes_data.decode('ascii', errors='replace').rstrip()
 
 def write_byte(file_handle, address: int, value: int):
     """
@@ -184,7 +209,7 @@ def write_multi_bytes(file_handle, address: int, value: int, num_bytes: int):
     file_handle.write(value_bytes)
 
     # TODO 1: Fold write_byte and write_multi_bytes into one "write_bytes"
-    # function that either knows to use 1- and 3-byte writes where 
+    # function that either knows to use 1- and 3-byte writes where
     # appropriate because we pre-define which attributes need it, or that
     # takes an input on how many bytes to write (and perhaps defaults to
     # 1 if no input is given, so we don't have to change many existing writes).
@@ -194,6 +219,30 @@ def write_multi_bytes(file_handle, address: int, value: int, num_bytes: int):
     # byte(s) on disk to determine if write is actually needed, rather than our
     # current method of just writing everything on save. On the other hand,
     # that sounds like it might be a lot of work.
+
+def write_string(file_handle, address: int, value: str, length: int):
+    """
+    Write a string to a specific address in the save game file.
+    The string will be padded with spaces to fill the specified length.
+
+    Args:
+        file_handle: An open file handle in binary write mode
+        address: The hex address to write to
+        value: The string to write
+        length: The total number of bytes to write (will be space-padded)
+
+    Raises:
+        ValueError: If the string is longer than the specified length
+    """
+    if len(value) > length:
+        raise ValueError(f"String '{value}' is too long for {length} bytes")
+
+    # Pad the string with spaces to fill the full length
+    padded_string = value.ljust(length)
+
+    # Convert to bytes and write
+    file_handle.seek(address)
+    file_handle.write(padded_string.encode('ascii'))
 
 def initialize_save_data() -> dict:
     """
@@ -219,6 +268,7 @@ def initialize_save_data() -> dict:
     # Create identical structure for all 5 crew members
     for crew_num in range(1, 6):
         save_data['crew'][crew_num] = {
+            'name': '',
             'rank': 0,
             'hp': 0,
             'characteristics': {
@@ -255,13 +305,15 @@ def initialize_save_data() -> dict:
 def get_crew_addresses():
     """Generate address mappings for all crew members programmatically."""
     crew_addrs = {}
-    
+
     for crew_num in range(1, 6):
         # Get the crew-specific constant prefix (e.g., "CREW1_", "CREW2_", etc)
         prefix = f"CREW{crew_num}_"
-        
+
         # Use globals() to look up constants by constructed name
         crew_addrs[crew_num] = {
+            'name': globals()[f"{prefix}NAME_ADDR"],
+            'name_length': globals()[f"{prefix}NAME_LENGTH"],
             'rank': globals()[f"{prefix}RANK_ADDR"],
             'hp': globals()[f"{prefix}HP_ADDR"],
             'characteristics': {
@@ -292,7 +344,7 @@ def get_crew_addresses():
                 'inventory_start': globals()[f"{prefix}INVENTORY_START"]
             }
         }
-    
+
     return crew_addrs
 
 def load_save_game(filename: str) -> dict:
@@ -328,7 +380,10 @@ def load_save_game(filename: str) -> dict:
         # Load data for each crew member
         for crew_num in range(1, 6):
             addrs = crew_addrs[crew_num]
-            
+
+            # Name
+            save_data['crew'][crew_num]['name'] = read_string(f, addrs['name'], addrs['name_length'])
+
             # Basic stats
             save_data['crew'][crew_num]['rank'] = read_byte(f, addrs['rank'])
             save_data['crew'][crew_num]['hp'] = read_byte(f, addrs['hp'])
@@ -389,7 +444,10 @@ def save_game(filename: str) -> bool:
             for crew_num in range(1, 6):
                 addrs = crew_addrs[crew_num]
                 crew = save_game_data['crew'][crew_num]
-                
+
+                # Name
+                write_string(f, addrs['name'], crew['name'], addrs['name_length'])
+
                 # Basic stats
                 write_byte(f, addrs['rank'], crew['rank'])
                 write_byte(f, addrs['hp'], crew['hp'])
@@ -487,14 +545,10 @@ def display_ship_software() -> None:
 def display_party_select_menu() -> None:
     """Display the party member selection menu."""
     print("\nSelect party member to edit:")
-    print("1) Edit party member 1")
-    print("2) Edit party member 2") 
-    print("3) Edit party member 3")
-    print("4) Edit party member 4")
-    print("5) Edit party member 5")
+    for crew_num in range(1, 6):
+        crew_name = save_game_data['crew'][crew_num]['name']
+        print(f"{crew_num}) Edit party member {crew_num}: {crew_name}")
     print("R) Return to main menu")
-
-    # TODO: Extract and display party member names
 
 def handle_party_select_menu() -> Optional[int]:
     """
@@ -522,18 +576,17 @@ def handle_party_select_menu() -> Optional[int]:
 def display_character_edit_menu(member_num: int) -> None:
     """
     Display the character editing menu for a specific party member.
-    
+
     Args:
         member_num: The party member number (1-5) being edited
     """
-    print(f"\nEditing party member {member_num}:")
+    crew_name = save_game_data['crew'][member_num]['name']
+    print(f"\nEditing party member {member_num}: {crew_name}")
     print("1) Edit characteristics")
     print("2) Edit abilities")
     print("3) Edit HP")
     print("4) Edit equipment")
-    print("R) Return to party select menu")
-
-    # TODO: Extract and display party member name 
+    print("R) Return to party select menu") 
 
 def handle_character_edit_menu(member_num: int) -> None:
     """
