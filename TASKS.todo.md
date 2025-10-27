@@ -30,6 +30,21 @@
   - Both new functions use default parameter num_bytes=1 for single-byte operations
   - Updated all function calls throughout the codebase to use the new unified functions
   - Removed duplicate code and improved maintainability
+- **NEW: Flexible file path system with comprehensive validation**
+  - Added command-line argument support: can now run `python main.py path/to/gamea.fm`
+  - Replaced hardcoded GAMEA.FM/GAMEB.FM with flexible path input
+  - Support for any gameX.fm filename (X = A-Z, case-insensitive)
+  - Added DEFAULT_SAVE_PATH constant (currently "test_data") for quick file selection
+  - Comprehensive file validation:
+    - File existence and readability checks
+    - File size validation (must be 1KB-16KB)
+    - Sentinel Worlds signature verification at 0x3181 (checks for "Sentinel" bytes)
+    - Filename pattern matching (gameX.fm where X is A-Z)
+    - Directory write permission check (required for saving and backups)
+  - Automatic backup creation (.bak files) before editing
+  - Exits with clear error if write permissions are missing
+  - Supports ~ expansion and relative/absolute paths
+  - Interactive mode with helpful prompts and examples
 
 ## What to do next:
 - UX/UI needs huge improvements. This is a good place to focus.

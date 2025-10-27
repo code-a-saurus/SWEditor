@@ -32,39 +32,179 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import os
 import sys
-from typing import Optional, Dict, List, Set
+import re
+import argparse
+from typing import Optional, Dict, List, Set, Tuple
 from sw_constants import * # Imports all our game constants
 from inventory_constants import ITEM_NAMES, VALID_INVENTORY, VALID_ARMOR, VALID_WEAPONS
 
 # Constants for file operations
-SAVE_FILE_A = "test_data/gamea.fm"
-SAVE_FILE_B = "test_data/gameb.fm"
+DEFAULT_SAVE_PATH = "test_data"  # Default directory to look for save files
 
 # Global state for save game data
 save_game_data = {}
 
 # Global state for application
 app_state = {
-    'current_file': None,  # Will hold 'A' or 'B' once user selects
+    'current_file': None,  # Will hold the full filepath to the save file being edited
     'has_changes': False,  # Track if there are unsaved changes
     'file_loaded': False   # Track if we've successfully loaded a file
 }
 
-def get_save_file_choice() -> Optional[str]:
-    """Prompt user to select which save file to edit."""
-    print("\nSelect save file to edit:")
-    print("A) GAMEA.FM")
-    print("B) GAMEB.FM")
-    print("Any other key to quit")
-    
-    choice = input("\nChoice: ").upper()
-    
-    if choice == 'A':
-        return SAVE_FILE_A
-    elif choice == 'B':
-        return SAVE_FILE_B
-    else:
-        return None
+def validate_save_file(filepath: str) -> Tuple[bool, str]:
+    """
+    Validate that a file is a legitimate Sentinel Worlds save file.
+
+    Checks performed:
+    - File exists
+    - File is readable
+    - File size is reasonable (< 16KB)
+    - File has "Sentinel" signature at 0x3181
+    - Filename matches pattern gameX.fm (X = A-Z, case-insensitive)
+    - File location is writable (for saving and backup)
+
+    Args:
+        filepath: Path to the file to validate
+
+    Returns:
+        tuple: (is_valid, error_message)
+               is_valid is True if file is valid, False otherwise
+               error_message is empty string if valid, otherwise contains error
+    """
+    # Check file exists
+    if not os.path.exists(filepath):
+        return False, f"File not found: {filepath}"
+
+    # Check it's actually a file (not a directory)
+    if not os.path.isfile(filepath):
+        return False, f"Path is not a file: {filepath}"
+
+    # Check file is readable
+    if not os.access(filepath, os.R_OK):
+        return False, f"File is not readable: {filepath}"
+
+    # Check file size (should be ~12KB, we allow up to 16KB)
+    file_size = os.path.getsize(filepath)
+    if file_size > MAX_SAVE_FILE_SIZE:
+        return False, f"File is too large ({file_size} bytes). Expected ~12KB, max 16KB."
+
+    if file_size < 1024:  # At least 1KB
+        return False, f"File is too small ({file_size} bytes). Likely not a valid save file."
+
+    # Check filename matches pattern gameX.fm (X = A-Z, case-insensitive)
+    filename = os.path.basename(filepath).lower()
+    if not re.match(r'^game[a-z]\.fm$', filename):
+        return False, f"Filename must match pattern 'gameX.fm' where X is A-Z (found: {os.path.basename(filepath)})"
+
+    # Check file has correct signature at 0x3181
+    try:
+        with open(filepath, 'rb') as f:
+            f.seek(SENTINEL_SIGNATURE_ADDR)
+            signature = f.read(len(SENTINEL_SIGNATURE))
+
+            if signature != SENTINEL_SIGNATURE:
+                return False, "File does not appear to be a valid Sentinel Worlds save file (signature mismatch)"
+    except IOError as e:
+        return False, f"Error reading file: {e}"
+
+    # Check directory is writable (needed for saving changes and creating backups)
+    directory = os.path.dirname(filepath)
+    if not os.access(directory, os.W_OK):
+        return False, f"Directory is not writable: {directory}\nCannot save changes or create backup files."
+
+    return True, ""
+
+def get_save_file_path(cmdline_path: Optional[str] = None) -> Optional[str]:
+    """
+    Get the path to a save file, either from command line or user input.
+    Validates the file before returning.
+
+    Args:
+        cmdline_path: Optional path provided via command line argument
+
+    Returns:
+        str: Validated file path, or None if user wants to quit
+    """
+    # If path provided via command line, validate and use it
+    if cmdline_path:
+        # Expand user home directory (~) and make absolute
+        filepath = os.path.abspath(os.path.expanduser(cmdline_path))
+
+        is_valid, error_msg = validate_save_file(filepath)
+        if is_valid:
+            return filepath
+        else:
+            print(f"\nError with specified file: {error_msg}")
+            print("Please check the path and try again.")
+            sys.exit(1)
+
+    # Interactive mode - prompt user for path
+    print("\nSentinel Worlds I: Future Magic - Save Game Editor")
+    print("=" * 55)
+    print("\nEnter the path to your save file (gameX.fm where X = A-Z)")
+    print("\nExamples:")
+    print("  /path/to/gamea.fm")
+    print("  ~/Documents/SW1/GAMEB.FM")
+    print("  ./test_data/gamea.fm")
+    print(f"\nOr just enter a filename to use default path: {DEFAULT_SAVE_PATH}")
+    print("Press Enter with no input to quit")
+
+    while True:
+        filepath = input("\nFile path: ").strip()
+
+        # Allow user to quit
+        if not filepath:
+            return None
+
+        # If just a filename (no path separators), prepend default path
+        if os.sep not in filepath and '/' not in filepath:
+            filepath = os.path.join(DEFAULT_SAVE_PATH, filepath)
+
+        # Expand user home directory (~)
+        filepath = os.path.expanduser(filepath)
+
+        # Convert to absolute path
+        filepath = os.path.abspath(filepath)
+
+        # Validate the file
+        is_valid, error_msg = validate_save_file(filepath)
+
+        if is_valid:
+            print(f"\n✓ Valid save file found: {filepath}")
+            return filepath
+        else:
+            print(f"\n✗ Error: {error_msg}")
+            print("Please try again, or press Enter to quit.")
+
+def create_backup(filepath: str) -> bool:
+    """
+    Create a backup copy of the save file before editing.
+    Backup is created in the same directory with .bak extension.
+
+    Args:
+        filepath: Path to the file to backup
+
+    Returns:
+        bool: True if backup created successfully, False otherwise
+    """
+    backup_path = filepath + '.bak'
+
+    try:
+        # Read original file
+        with open(filepath, 'rb') as src:
+            data = src.read()
+
+        # Write backup
+        with open(backup_path, 'wb') as dst:
+            dst.write(data)
+
+        print(f"✓ Backup created: {backup_path}")
+        return True
+
+    except IOError as e:
+        print(f"✗ Warning: Could not create backup file: {e}")
+        print("Continuing without backup...")
+        return False
 
 def read_bytes(file_handle, address: int, num_bytes: int = 1) -> int:
     """
@@ -440,8 +580,7 @@ def handle_main_menu() -> bool:
                 return True
         return False
     elif choice == 'W' and app_state['has_changes']:
-        filename = SAVE_FILE_A if app_state['current_file'] == 'A' else SAVE_FILE_B
-        if save_game(filename):
+        if save_game(app_state['current_file']):
             print("\nChanges saved successfully!")
         return True
     elif choice == '1':
@@ -945,41 +1084,59 @@ def edit_light_energy() -> None:
 
 def main():
     """Main entry point for the save game editor."""
-    print("Sentinel Worlds I: Future Magic - Save Game Editor")
-    print("-----------------------------------------------")
-    
-    filename = get_save_file_choice()
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(
+        description='Edit Sentinel Worlds I: Future Magic save game files',
+        epilog='If no file path is provided, you will be prompted to enter one interactively.'
+    )
+    parser.add_argument(
+        'filepath',
+        nargs='?',
+        help='Path to save file (gameX.fm where X = A-Z)'
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='Sentinel Worlds Save Editor v0.1a'
+    )
+
+    args = parser.parse_args()
+
+    # Get and validate save file path (from command line or interactive prompt)
+    filename = get_save_file_path(args.filepath)
     if not filename:
         print("\nExiting.")
         sys.exit(0)
-        
-    if not os.path.exists(filename):
-        print(f"\nError: Save file {filename} not found!")
-        sys.exit(1)
-        
-    app_state['current_file'] = 'A' if filename == SAVE_FILE_A else 'B'
+
+    # Store the filepath in app state
+    app_state['current_file'] = filename
+
+    # Create backup before editing
     print(f"\nOpening {os.path.basename(filename)}...")
-    
+    create_backup(filename)
+
     try:
         # Load the save game data into our global dictionary
         global save_game_data
         save_game_data = load_save_game(filename)
         app_state['file_loaded'] = True
-        
+
+        print(f"✓ Save file loaded successfully!")
+
         # Enter main menu loop
         while True:
             display_main_menu()
             if not handle_main_menu():
                 break
-            
+
     except (IOError, FileNotFoundError) as e:
         print(f"\nError loading save file: {e}")
         sys.exit(1)
     except Exception as e:
         print(f"\nUnexpected error: {e}")
         sys.exit(1)
-        
+
     print("\nExiting.")
-    
+
 if __name__ == "__main__":
     main()
