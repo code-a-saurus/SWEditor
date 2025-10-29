@@ -35,8 +35,16 @@ import sys
 import re
 import argparse
 from typing import Optional, Dict, List, Set, Tuple
-from sw_constants import * # Imports all our game constants
-from inventory_constants import ITEM_NAMES, VALID_INVENTORY, VALID_ARMOR, VALID_WEAPONS
+
+# Handle imports for both pip-installed and direct execution
+try:
+    # When installed via pip
+    from src.sw_constants import *  # type: ignore
+    from src.inventory_constants import ITEM_NAMES, VALID_INVENTORY, VALID_ARMOR, VALID_WEAPONS
+except ModuleNotFoundError:
+    # When running directly from source
+    from sw_constants import *  # type: ignore
+    from inventory_constants import ITEM_NAMES, VALID_INVENTORY, VALID_ARMOR, VALID_WEAPONS
 
 # Constants for file operations
 DEFAULT_SAVE_PATH = "test_data"  # Default directory to look for save files

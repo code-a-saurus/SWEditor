@@ -12,5 +12,7 @@
         }
     ],
     "typeCheckingMode": "basic",
-    "useLibraryCodeForTypes": true
+    "useLibraryCodeForTypes": true,
+    "reportUndefinedVariable": false,
+    "reportUnboundVariable": false
 }

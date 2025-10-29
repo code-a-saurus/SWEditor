@@ -16,7 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 """
 
-from sw_constants import *
+# Handle imports for both pip-installed and direct execution
+try:
+    from src.sw_constants import *
+except ModuleNotFoundError:
+    from sw_constants import *
 
 def format_item_name(constant_name: str) -> str:
     """Convert a constant name like 'NEUTRON_GUN' to 'Neutron Gun'."""
