@@ -1,5 +1,5 @@
 ## Sentinel Worlds I: Future Magic save game editor
-Version: 0.1a
+Version: 0.5b (Beta)
 
 Author: Lee Hutchinson
 
@@ -12,15 +12,28 @@ The editor can modify:
 - Ship software levels
 
 ### Usage
-Run the script and follow the interactive prompts to edit your SW1 saves.
 
-You currently need to provide your own GAMEA.FM and GAMEB.FM files.
+You need to provide your own Sentinel Worlds I save game files (gameX.fm where X = A-Z).
 
-The files currently need to be located in a directory named /test_data/
-beneath the project root directory, and they need to be named GAMEA.FM
-and GAMEB.FM.
+**Command-line usage:**
+```bash
+python3 src/main.py path/to/gamea.fm
+```
 
-Everything should work. It's been mostly tested.
+**Interactive usage:**
+```bash
+python3 src/main.py
+```
+Then enter the path when prompted, or just press Enter to use the default location (test_data/).
+
+The editor supports:
+- Flexible file paths (absolute, relative, or ~/home paths)
+- Any gameX.fm filename (X = A-Z, case-insensitive)
+- Automatic file validation and backup creation (.bak files)
+- Command-line help: `python3 src/main.py --help`
+- Version info: `python3 src/main.py --version`
+
+**Note:** The directory containing your save file must be writable for backups and saving.
 
 ### License
 This project is licensed under the terms of the GNU General Public License

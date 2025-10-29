@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Sentinel Worlds I: Future Magic Save Game Editor
-Version: 0.1a
+Version: 0.5b
 Author: Lee Hutchinson
 
 This script provides a command-line interface for editing save game files
@@ -1097,7 +1097,7 @@ def main():
     parser.add_argument(
         '--version',
         action='version',
-        version='Sentinel Worlds Save Editor v0.1a'
+        version='Sentinel Worlds Save Editor v0.5b'
     )
 
     args = parser.parse_args()
