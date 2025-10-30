@@ -28,8 +28,8 @@ classifiers = [
 keywords = ["sentinel-worlds", "game", "save-editor", "retro-gaming"]
 
 [project.urls]
-Homepage = "https://github.com/your-username/Sentinel_Worlds_editor"
-Issues = "https://github.com/your-username/Sentinel_Worlds_editor/issues"
+Homepage = "https://github.com/code-a-saurus/SWEditor"
+Issues = "https://github.com/code-a-saurus/SWEditor/issues"
 
 [project.scripts]
 sw-editor = "src.main:main"

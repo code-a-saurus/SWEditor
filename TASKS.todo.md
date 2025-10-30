@@ -45,6 +45,30 @@
   - Exits with clear error if write permissions are missing
   - Supports ~ expansion and relative/absolute paths
   - Interactive mode with helpful prompts and examples
+- **NEW: Beta Release Preparation (v0.5b)**
+  - Updated version number from 0.1a to 0.5b in main.py header and --version output
+  - Updated README.md to reflect beta status and current features
+  - Rewrote README.md Usage section with comprehensive installation/usage instructions
+  - Documented flexible file path support and command-line arguments
+- **NEW: pip Package Installation Setup**
+  - Created pyproject.toml for modern Python packaging
+  - Package name: sentinel-worlds-editor
+  - Creates executable command: `sw-editor` (can be run from anywhere after pip install)
+  - Supports both installation methods:
+    - Local: `pip install .` from project directory
+    - Git: `pip install git+https://gitea-server/repo.git` directly from repository
+  - Fixed module imports to work both ways:
+    - When pip-installed: imports from `src.` package
+    - When run directly: imports from local modules
+    - Uses try/except to handle both cases transparently
+  - Updated inventory_constants.py imports to match
+  - Added `# type: ignore` comments to suppress Pylance warnings on wildcard imports
+  - Updated pyrightconfig.json to disable reportUnboundVariable/reportUndefinedVariable
+  - Tested and verified both execution methods work:
+    - Direct execution: `python3 src/main.py`
+    - Pip-installed: `sw-editor`
+  - No PyPI publishing required - users can install directly from Git repo or local directory
+  - Professional distribution method without code signing complexity
 
 ## What to do next:
 - UX/UI needs huge improvements. This is a good place to focus.
