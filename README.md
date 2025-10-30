@@ -19,7 +19,7 @@ The editor can modify:
 pip install .
 
 # Or install directly from your Git repository
-pip install git+https://your-gitea-server/repo/Sentinel_Worlds_editor.git
+pip install git+https://github.com/code-a-saurus/SWEditor.git
 ```
 
 After installation, you can run the editor from anywhere:
