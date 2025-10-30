@@ -1,7 +1,7 @@
 ## Sentinel Worlds I: Future Magic save game editor
 Version: 0.5b (Beta)
 
-Author: Lee Hutchinson
+Author: Kinda Lee Hutchinson but really Claude.ai Code
 
 This script provides a command-line interface for editing save game files
 from the 1989 MS-DOS game "Sentinel Worlds I: Future Magic".
