@@ -59,6 +59,10 @@ app_state = {
     'file_loaded': False   # Track if we've successfully loaded a file
 }
 
+# ============================================================================
+# FILE VALIDATION & PATH MANAGEMENT
+# ============================================================================
+
 def validate_save_file(filepath: str) -> Tuple[bool, str]:
     """
     Validate that a file is a legitimate Sentinel Worlds save file.
@@ -214,6 +218,10 @@ def create_backup(filepath: str) -> bool:
         print("Continuing without backup...")
         return False
 
+# ============================================================================
+# LOW-LEVEL FILE I/O OPERATIONS
+# ============================================================================
+
 def read_bytes(file_handle, address: int, num_bytes: int = 1) -> int:
     """
     Read one or more bytes from a specific address in the save game file.
@@ -323,6 +331,10 @@ def write_string(file_handle, address: int, value: str, length: int):
     # Convert to bytes and write
     file_handle.seek(address)
     file_handle.write(padded_string.encode('ascii'))
+
+# ============================================================================
+# DATA STRUCTURE MANAGEMENT
+# ============================================================================
 
 def initialize_save_data() -> dict:
     """
@@ -561,6 +573,10 @@ def save_game(filename: str) -> bool:
         print(f"\nError saving game: {e}")
         return False
 
+# ============================================================================
+# DISPLAY FUNCTIONS
+# ============================================================================
+
 def display_main_menu():
     """Display the main menu options to the user."""
     print("\nMain menu:")
@@ -572,15 +588,109 @@ def display_main_menu():
         print("W) (W)rite pending changes to disk")
     print("Q) (Q)uit")
 
+def display_ship_software() -> None:
+    """Display current values for all ship software."""
+    print("\nShip software values:")
+    print("--------------------")
+    print(f"  MOVE current value: {save_game_data['ship']['move']}")
+    print(f"TARGET current value: {save_game_data['ship']['target']}")
+    print(f"ENGINE current value: {save_game_data['ship']['engine']}")
+    print(f" LASER current value: {save_game_data['ship']['laser']}")
+
+def display_party_select_menu() -> None:
+    """Display the party member selection menu."""
+    print("\nSelect party member to edit:")
+    for crew_num in range(1, 6):
+        crew_name = save_game_data['crew'][crew_num]['name']
+        print(f"{crew_num}) Edit party member {crew_num}: {crew_name}")
+    print("R) Return to main menu")
+
+def display_character_edit_menu(member_num: int) -> None:
+    """
+    Display the character editing menu for a specific party member.
+
+    Args:
+        member_num: The party member number (1-5) being edited
+    """
+    crew_name = save_game_data['crew'][member_num]['name']
+    print(f"\nEditing party member {member_num}: {crew_name}")
+    print("1) Edit characteristics")
+    print("2) Edit abilities")
+    print("3) Edit HP")
+    print("4) Edit equipment")
+    print("R) Return to party select menu")
+
+def display_equipment(member_num: int) -> None:
+    """Display all equipment for the specified crew member."""
+    equipment = save_game_data['crew'][member_num]['equipment']
+    crew_name = save_game_data['crew'][member_num]['name']
+
+    print(f"\nEquipment for {crew_name} (crew member {member_num}):")
+    print("=" * 40)
+    print(f"Equipped Armor: [{hex(equipment['armor'])}] {ITEM_NAMES[equipment['armor']]}")
+    print(f"Equipped Weapon: [{hex(equipment['weapon'])}] {ITEM_NAMES[equipment['weapon']]}")
+    
+    print("\nOn-hand Weapons:")
+    print("-" * 40)
+    for i, weapon in enumerate(equipment['onhand_weapons'], 1):
+        print(f"{i}) [{hex(weapon)}] {ITEM_NAMES[weapon]}")
+        
+    print("\nInventory:")
+    print("-" * 40)
+    for i, item in enumerate(equipment['inventory'], 1):
+        print(f"{i}) [{hex(item)}] {ITEM_NAMES[item]}")
+
+# ============================================================================
+# INPUT VALIDATION HELPERS
+# ============================================================================
+
+def get_item_code(prompt: str, valid_items: set) -> Optional[int]:
+    """
+    Get a valid item code from user input.
+
+    Args:
+        prompt: The prompt to show the user
+        valid_items: Set of valid item codes for this slot
+        
+    Returns:
+        Optional[int]: The validated item code, or None to keep current item
+    """
+    while True:
+        try:
+            value = input(prompt)
+            
+            # Allow empty input to keep current item
+            if not value:
+                return None
+                
+            # Handle both "0x" prefix and raw hex strings
+            if value.startswith("0x"):
+                item_code = int(value, 16)
+            else:
+                item_code = int(value, 16)
+                
+            if item_code in valid_items:
+                print(f"Selected: {ITEM_NAMES[item_code]}")
+                return item_code
+            else:
+                print("Error: Invalid item code for this slot")
+                
+        except ValueError:
+            print("Error: Please enter a valid hexadecimal code")
+
+# ============================================================================
+# MENU HANDLERS
+# ============================================================================
+
 def handle_main_menu() -> bool:
     """
     Handle user input for the main menu.
-    
+
     Returns:
         bool: False if the user wants to quit, True to continue
     """
     choice = input("\nEnter choice: ").upper()
-    
+
     if choice == 'Q':
         if app_state['has_changes']:
             confirm = input("You have unsaved changes. Really quit? (y/N): ").upper()
@@ -612,37 +722,20 @@ def handle_main_menu() -> bool:
         print("\nInvalid choice!")
         return True
 
-def display_ship_software() -> None:
-    """Display current values for all ship software."""
-    print("\nShip software values:")
-    print("--------------------")
-    print(f"  MOVE current value: {save_game_data['ship']['move']}")
-    print(f"TARGET current value: {save_game_data['ship']['target']}")
-    print(f"ENGINE current value: {save_game_data['ship']['engine']}")
-    print(f" LASER current value: {save_game_data['ship']['laser']}")
-
-def display_party_select_menu() -> None:
-    """Display the party member selection menu."""
-    print("\nSelect party member to edit:")
-    for crew_num in range(1, 6):
-        crew_name = save_game_data['crew'][crew_num]['name']
-        print(f"{crew_num}) Edit party member {crew_num}: {crew_name}")
-    print("R) Return to main menu")
-
 def handle_party_select_menu() -> Optional[int]:
     """
     Handle user input for the party member selection menu.
-    
+
     Returns:
         Optional[int]: Selected party member number (1-5), or None to return to main menu
     """
     while True:
         display_party_select_menu()
         choice = input("\nEnter choice: ").upper()
-        
+
         if choice == 'R':
             return None
-            
+
         try:
             member_num = int(choice)
             if 1 <= member_num <= 5:
@@ -652,35 +745,20 @@ def handle_party_select_menu() -> Optional[int]:
         except ValueError:
             print("\nInvalid choice! Please select 1-5 or R to return.")
 
-def display_character_edit_menu(member_num: int) -> None:
-    """
-    Display the character editing menu for a specific party member.
-
-    Args:
-        member_num: The party member number (1-5) being edited
-    """
-    crew_name = save_game_data['crew'][member_num]['name']
-    print(f"\nEditing party member {member_num}: {crew_name}")
-    print("1) Edit characteristics")
-    print("2) Edit abilities")
-    print("3) Edit HP")
-    print("4) Edit equipment")
-    print("R) Return to party select menu") 
-
 def handle_character_edit_menu(member_num: int) -> None:
     """
     Handle user input for the character edit menu.
-    
+
     Args:
         member_num: The party member number (1-5) being edited
     """
     while True:
         display_character_edit_menu(member_num)
         choice = input("\nEnter choice: ").upper()
-        
+
         if choice == 'R':
             return
-            
+
         elif choice == '1':
             edit_characteristics(member_num)
         elif choice == '2':
@@ -692,59 +770,9 @@ def handle_character_edit_menu(member_num: int) -> None:
         else:
             print("\nInvalid choice!")
 
-def display_equipment(member_num: int) -> None:
-    """Display all equipment for the specified crew member."""
-    equipment = save_game_data['crew'][member_num]['equipment']
-    crew_name = save_game_data['crew'][member_num]['name']
-
-    print(f"\nEquipment for {crew_name} (crew member {member_num}):")
-    print("=" * 40)
-    print(f"Equipped Armor: [{hex(equipment['armor'])}] {ITEM_NAMES[equipment['armor']]}")
-    print(f"Equipped Weapon: [{hex(equipment['weapon'])}] {ITEM_NAMES[equipment['weapon']]}")
-    
-    print("\nOn-hand Weapons:")
-    print("-" * 40)
-    for i, weapon in enumerate(equipment['onhand_weapons'], 1):
-        print(f"{i}) [{hex(weapon)}] {ITEM_NAMES[weapon]}")
-        
-    print("\nInventory:")
-    print("-" * 40)
-    for i, item in enumerate(equipment['inventory'], 1):
-        print(f"{i}) [{hex(item)}] {ITEM_NAMES[item]}")
-
-def get_item_code(prompt: str, valid_items: set) -> Optional[int]:
-    """
-    Get a valid item code from user input.
-    
-    Args:
-        prompt: The prompt to show the user
-        valid_items: Set of valid item codes for this slot
-        
-    Returns:
-        Optional[int]: The validated item code, or None to keep current item
-    """
-    while True:
-        try:
-            value = input(prompt)
-            
-            # Allow empty input to keep current item
-            if not value:
-                return None
-                
-            # Handle both "0x" prefix and raw hex strings
-            if value.startswith("0x"):
-                item_code = int(value, 16)
-            else:
-                item_code = int(value, 16)
-                
-            if item_code in valid_items:
-                print(f"Selected: {ITEM_NAMES[item_code]}")
-                return item_code
-            else:
-                print("Error: Invalid item code for this slot")
-                
-        except ValueError:
-            print("Error: Please enter a valid hexadecimal code")
+# ============================================================================
+# EDIT FUNCTIONS - EQUIPMENT
+# ============================================================================
 
 def edit_equipment(member_num: int) -> None:
     """Edit equipment for the specified crew member."""
@@ -811,6 +839,10 @@ def edit_equipment(member_num: int) -> None:
                 print("\nNo changes made.")
         else:
             print("\nInvalid choice!")
+
+# ============================================================================
+# EDIT FUNCTIONS - CHARACTER STATS
+# ============================================================================
 
 def edit_characteristics(member_num: int) -> None:
     """
@@ -980,6 +1012,10 @@ def edit_hp(member_num: int) -> None:
         except ValueError:
             print("Error: Please enter a valid number")
 
+# ============================================================================
+# EDIT FUNCTIONS - SHIP & PARTY
+# ============================================================================
+
 def edit_ship_software() -> None:
     """Edit ship software values."""
     while True:
@@ -1089,6 +1125,10 @@ def edit_light_energy() -> None:
             
         except ValueError:
             print("Error: Please enter a valid number")
+
+# ============================================================================
+# MAIN ENTRY POINT
+# ============================================================================
 
 def main():
     """Main entry point for the save game editor."""
