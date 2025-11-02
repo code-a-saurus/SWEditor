@@ -33,6 +33,7 @@ Issues = "https://github.com/code-a-saurus/SWEditor/issues"
 
 [project.scripts]
 sw-editor = "src.main:main"
+sw-editor-gui = "src.gui:main"
 
 [project.optional-dependencies]
 dev = [
