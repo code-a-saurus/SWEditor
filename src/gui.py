@@ -47,7 +47,7 @@ class SentinelWorldsEditor(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("Sentinel Worlds I: Future Magic - Save Game Editor v0.5b")
+        self.title("Sentinel Worlds I: Future Magic - Save Game Editor v0.7b")
         self.geometry("900x600")
 
         # Track unsaved changes

@@ -45,8 +45,9 @@
   - Exits with clear error if write permissions are missing
   - Supports ~ expansion and relative/absolute paths
   - Interactive mode with helpful prompts and examples
-- **NEW: Beta Release Preparation (v0.5b)**
+- **NEW: Beta Release Preparation (v0.5b → v0.7b)**
   - Updated version number from 0.1a to 0.5b in main.py header and --version output
+  - Updated version to 0.7b across all files (pyproject.toml, main.py, gui.py)
   - Updated README.md to reflect beta status and current features
   - Rewrote README.md Usage section with comprehensive installation/usage instructions
   - Documented flexible file path support and command-line arguments
@@ -86,7 +87,7 @@
   - Removed duplicate functions discovered during reorganization
   - Improved code readability and maintainability
   - Validated syntax with `python3 -m py_compile`
-- **NEW: GUI Version with Tkinter (v0.5b)**
+- **NEW: GUI Version with Tkinter (v0.5b → v0.7b)**
   - Created complete GUI application in src/gui.py using Tkinter (cross-platform, no dependencies)
   - Added second entry point: `sw-editor-gui` alongside existing `sw-editor` CLI
   - GUI Features:
