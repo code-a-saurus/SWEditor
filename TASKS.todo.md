@@ -70,5 +70,58 @@
   - No PyPI publishing required - users can install directly from Git repo or local directory
   - Professional distribution method without code signing complexity
 
+- **NEW: Code Organization and Refactoring**
+  - Reorganized all functions in main.py into 10 logical sections with visual separators:
+    - File Validation & Path Management
+    - Low-Level File I/O Operations
+    - Data Structure Management
+    - Display Functions
+    - Input Validation Helpers
+    - Menu Handlers
+    - Edit Functions - Equipment
+    - Edit Functions - Character Stats
+    - Edit Functions - Ship & Party
+    - Main Entry Point
+  - Added clear section headers (============) for easy navigation
+  - Removed duplicate functions discovered during reorganization
+  - Improved code readability and maintainability
+  - Validated syntax with `python3 -m py_compile`
+- **NEW: GUI Version with Tkinter (v0.5b)**
+  - Created complete GUI application in src/gui.py using Tkinter (cross-platform, no dependencies)
+  - Added second entry point: `sw-editor-gui` alongside existing `sw-editor` CLI
+  - GUI Features:
+    - Menu bar with File operations (Open, Save, Exit) and keyboard shortcuts (Cmd+O, Cmd+S, Cmd+Q)
+    - Left panel: Tree navigation showing Party, Ship, and all 5 Crew Members with expandable sections
+    - Right panel: Dynamic editor that changes based on tree selection
+    - Status bar: Shows current file name and unsaved changes indicator (red "● Unsaved changes")
+    - Automatic backup creation on file open
+    - Unsaved changes warning on exit
+  - Full editing support for all game data:
+    - Party cash with validation (max: 655,359)
+    - Light energy with validation (max: 254)
+    - Ship software (MOVE, TARGET, ENGINE, LASER) with validation (max: 100)
+    - Crew characteristics (5 stats per member) with validation (max: 100)
+    - Crew abilities (12 skills per member) with validation (max: 100)
+    - Crew HP with validation (max: 255)
+    - Crew equipment with filtered dropdown menus:
+      - Equipped Armor: dropdown filtered to VALID_ARMOR items only
+      - Equipped Weapon: dropdown filtered to VALID_WEAPONS items only
+      - On-hand Weapons (3 slots): dropdown filtered to VALID_WEAPONS items only
+      - Inventory (8 slots): dropdown filtered to VALID_INVENTORY (all valid items)
+  - User-friendly interface improvements:
+    - Human-readable item names ("Neutron Gun") instead of hex codes (0x1B)
+    - Alphabetically sorted dropdown lists
+    - Current values pre-selected in all dropdowns
+    - Scrollable interfaces for long lists (abilities, equipment)
+    - Clear validation messages via dialog boxes
+    - All numeric fields show maximum allowed values
+  - Technical implementation:
+    - Shared `save_game_data` between GUI and CLI via `main_module` reference
+    - Proper module imports work both pip-installed and when run directly
+    - Installed Tkinter support for Python 3.13 via `brew install python-tk@3.13`
+    - Editable pip install (`pip install -e .`) allows immediate testing of code changes
+  - Both versions (CLI and GUI) fully functional and maintained in parallel
+
 ## What to do next:
-- UX/UI needs huge improvements. This is a good place to focus.
+- Testing and polish for GUI version
+- Consider adding more user-friendly features (drag-and-drop file opening, recent files menu, etc.)
