@@ -1,5 +1,5 @@
 ## Sentinel Worlds I: Future Magic save game editor
-Version: 0.5b (Beta)
+Version: 0.7b (Beta)
 
 Author: Kinda Lee Hutchinson but really Claude.ai Code
 
