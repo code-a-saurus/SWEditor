@@ -19,3 +19,9 @@ build/
 
 # Sentinel Worlds saves
 test_data/
+
+# Xcode
+SentinelWorldsEditor/build/
+SentinelWorldsEditor/*.xcodeproj/xcuserdata/
+SentinelWorldsEditor/DerivedData/
+*.swp
