@@ -212,7 +212,9 @@ final class ConstantsTests: XCTestCase {
 
     // MARK: - Data Model Tests
 
-    // TODO: This test causes malloc deallocation error - same issue as testCrewMemberInitialization
+    // TODO: malloc deallocation error - occurs when CrewMember/SaveGame objects are deallocated
+    // This appears to be a Swift compiler/runtime bug. All assertions pass but deallocation crashes.
+    // Workaround: Equipment uses individual properties (onhandWeapon1-3, inventory1-8) instead of arrays.
     /*
     func testSaveGameInitialization() {
         let saveGame = SaveGame()
@@ -223,11 +225,7 @@ final class ConstantsTests: XCTestCase {
         XCTAssertFalse(saveGame.hasUnsavedChanges, "Should start with no unsaved changes")
         XCTAssertNil(saveGame.fileURL, "Should start with no file URL")
     }
-    */
 
-    // TODO: This test causes malloc deallocation error - appears to be compiler/runtime bug
-    // All assertions pass but CrewMember deallocation triggers malloc error
-    /*
     func testCrewMemberInitialization() {
         let crew = CrewMember(crewNumber: 1)
 

@@ -128,12 +128,21 @@ struct Abilities {
 ///
 /// Equipment uses UInt8 item codes (see ItemConstants.swift for item definitions).
 /// Empty slots are represented by 0xFF (ItemConstants.emptySlot).
+///
+/// **Implementation Note:**
+/// Uses individual properties instead of arrays due to a malloc deallocation error
+/// that occurs in the test environment when arrays (stored or computed) are used.
+/// This is a workaround for what appears to be a Swift compiler/runtime issue.
 struct Equipment {
     var armor: UInt8 = 0xFF
     var weapon: UInt8 = 0xFF
+
+    // On-hand weapons (3 slots) - individual properties instead of array
     var onhandWeapon1: UInt8 = 0xFF
     var onhandWeapon2: UInt8 = 0xFF
     var onhandWeapon3: UInt8 = 0xFF
+
+    // Inventory (8 slots) - individual properties instead of array
     var inventory1: UInt8 = 0xFF
     var inventory2: UInt8 = 0xFF
     var inventory3: UInt8 = 0xFF
@@ -142,8 +151,4 @@ struct Equipment {
     var inventory6: UInt8 = 0xFF
     var inventory7: UInt8 = 0xFF
     var inventory8: UInt8 = 0xFF
-
-    // TODO: Arrays cause malloc deallocation error - investigate compiler bug
-    // var onhandWeapons: [UInt8] = [0xFF, 0xFF, 0xFF]
-    // var inventory: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
 }
