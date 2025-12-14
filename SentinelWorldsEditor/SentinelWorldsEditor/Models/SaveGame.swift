@@ -48,9 +48,9 @@ class SaveGame: ObservableObject {
 // MARK: - Party Data
 
 /// Party-wide values (cash and light energy)
-class Party: ObservableObject {
-    @Published var cash: Int = 0
-    @Published var lightEnergy: Int = 0
+class Party {
+    var cash: Int = 0
+    var lightEnergy: Int = 0
 
     init(cash: Int = 0, lightEnergy: Int = 0) {
         self.cash = cash
@@ -61,11 +61,11 @@ class Party: ObservableObject {
 // MARK: - Ship Data
 
 /// Ship software levels
-class Ship: ObservableObject {
-    @Published var move: Int = 0
-    @Published var target: Int = 0
-    @Published var engine: Int = 0
-    @Published var laser: Int = 0
+class Ship {
+    var move: Int = 0
+    var target: Int = 0
+    var engine: Int = 0
+    var laser: Int = 0
 
     init(move: Int = 0, target: Int = 0, engine: Int = 0, laser: Int = 0) {
         self.move = move
@@ -78,80 +78,48 @@ class Ship: ObservableObject {
 // MARK: - Crew Member Data
 
 /// Data for a single crew member (5 crew members total)
-class CrewMember: ObservableObject, Identifiable {
+class CrewMember: Identifiable {
     let id: Int  // Crew number (1-5)
 
-    @Published var name: String
-    @Published var rank: Int
-    @Published var hp: Int
-    @Published var characteristics: Characteristics
-    @Published var abilities: Abilities
-    @Published var equipment: Equipment
+    var name: String = ""
+    var rank: Int = 0
+    var hp: Int = 0
+    var characteristics = Characteristics()
+    var abilities = Abilities()
+    var equipment = Equipment()
 
     init(crewNumber: Int) {
         self.id = crewNumber
-        self.name = ""
-        self.rank = 0
-        self.hp = 0
-        self.characteristics = Characteristics()
-        self.abilities = Abilities()
-        self.equipment = Equipment()
     }
 }
 
 // MARK: - Characteristics (Stats)
 
 /// Five core characteristics (stats) for a crew member
-class Characteristics: ObservableObject {
-    @Published var strength: Int = 0
-    @Published var stamina: Int = 0
-    @Published var dexterity: Int = 0
-    @Published var comprehend: Int = 0
-    @Published var charisma: Int = 0
-
-    init(strength: Int = 0, stamina: Int = 0, dexterity: Int = 0,
-         comprehend: Int = 0, charisma: Int = 0) {
-        self.strength = strength
-        self.stamina = stamina
-        self.dexterity = dexterity
-        self.comprehend = comprehend
-        self.charisma = charisma
-    }
+struct Characteristics {
+    var strength: Int = 0
+    var stamina: Int = 0
+    var dexterity: Int = 0
+    var comprehend: Int = 0
+    var charisma: Int = 0
 }
 
 // MARK: - Abilities (Skills)
 
 /// Twelve abilities (skills) for a crew member
-class Abilities: ObservableObject {
-    @Published var contact: Int = 0
-    @Published var edged: Int = 0
-    @Published var projectile: Int = 0
-    @Published var blaster: Int = 0
-    @Published var tactics: Int = 0
-    @Published var recon: Int = 0
-    @Published var gunnery: Int = 0
-    @Published var atvRepair: Int = 0
-    @Published var mining: Int = 0
-    @Published var athletics: Int = 0
-    @Published var observation: Int = 0
-    @Published var bribery: Int = 0
-
-    init(contact: Int = 0, edged: Int = 0, projectile: Int = 0, blaster: Int = 0,
-         tactics: Int = 0, recon: Int = 0, gunnery: Int = 0, atvRepair: Int = 0,
-         mining: Int = 0, athletics: Int = 0, observation: Int = 0, bribery: Int = 0) {
-        self.contact = contact
-        self.edged = edged
-        self.projectile = projectile
-        self.blaster = blaster
-        self.tactics = tactics
-        self.recon = recon
-        self.gunnery = gunnery
-        self.atvRepair = atvRepair
-        self.mining = mining
-        self.athletics = athletics
-        self.observation = observation
-        self.bribery = bribery
-    }
+struct Abilities {
+    var contact: Int = 0
+    var edged: Int = 0
+    var projectile: Int = 0
+    var blaster: Int = 0
+    var tactics: Int = 0
+    var recon: Int = 0
+    var gunnery: Int = 0
+    var atvRepair: Int = 0
+    var mining: Int = 0
+    var athletics: Int = 0
+    var observation: Int = 0
+    var bribery: Int = 0
 }
 
 // MARK: - Equipment
@@ -160,31 +128,22 @@ class Abilities: ObservableObject {
 ///
 /// Equipment uses UInt8 item codes (see ItemConstants.swift for item definitions).
 /// Empty slots are represented by 0xFF (ItemConstants.emptySlot).
-class Equipment: ObservableObject {
-    /// Currently equipped armor (1 slot)
-    @Published var armor: UInt8
+struct Equipment {
+    var armor: UInt8 = 0xFF
+    var weapon: UInt8 = 0xFF
+    var onhandWeapon1: UInt8 = 0xFF
+    var onhandWeapon2: UInt8 = 0xFF
+    var onhandWeapon3: UInt8 = 0xFF
+    var inventory1: UInt8 = 0xFF
+    var inventory2: UInt8 = 0xFF
+    var inventory3: UInt8 = 0xFF
+    var inventory4: UInt8 = 0xFF
+    var inventory5: UInt8 = 0xFF
+    var inventory6: UInt8 = 0xFF
+    var inventory7: UInt8 = 0xFF
+    var inventory8: UInt8 = 0xFF
 
-    /// Currently equipped weapon (1 slot)
-    @Published var weapon: UInt8
-
-    /// On-hand weapons (3 slots) - quick-access weapon slots
-    @Published var onhandWeapons: [UInt8]
-
-    /// General inventory (8 slots)
-    @Published var inventory: [UInt8]
-
-    init() {
-        // Initialize all slots as empty (0xFF)
-        self.armor = ItemConstants.emptySlot
-        self.weapon = ItemConstants.emptySlot
-        self.onhandWeapons = Array(repeating: ItemConstants.emptySlot, count: 3)
-        self.inventory = Array(repeating: ItemConstants.emptySlot, count: 8)
-    }
-
-    init(armor: UInt8, weapon: UInt8, onhandWeapons: [UInt8], inventory: [UInt8]) {
-        self.armor = armor
-        self.weapon = weapon
-        self.onhandWeapons = onhandWeapons
-        self.inventory = inventory
-    }
+    // TODO: Arrays cause malloc deallocation error - investigate compiler bug
+    // var onhandWeapons: [UInt8] = [0xFF, 0xFF, 0xFF]
+    // var inventory: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
 }
