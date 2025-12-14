@@ -2,7 +2,7 @@
 // ContentView.swift
 // Sentinel Worlds I: Future Magic Save Game Editor
 //
-// Copyright (C) 2025 Lee (BigDinosaur)
+// Copyright (C) 2025 Lee Hutchinson (lee@bigdinosaur.org)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,6 +27,11 @@ struct ContentView: View {
     @State private var showingFilePicker = false
     @State private var showingError = false
     @State private var errorMessage = ""
+
+    // Mark file as having unsaved changes
+    private func markChanged() {
+        saveGame.hasUnsavedChanges = true
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -110,24 +115,19 @@ struct ContentView: View {
                 // Party section
                 GroupBox(label: Label("Party", systemImage: "person.3")) {
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Cash:")
-                                .frame(width: 120, alignment: .leading)
-                            Text("\(saveGame.party.cash)")
-                                .fontWeight(.semibold)
-                            Text("(max: \(SaveFileConstants.MaxValues.cash))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        HStack {
-                            Text("Light Energy:")
-                                .frame(width: 120, alignment: .leading)
-                            Text("\(saveGame.party.lightEnergy)")
-                                .fontWeight(.semibold)
-                            Text("(max: \(SaveFileConstants.MaxValues.lightEnergy))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                        ValidatedNumberField(
+                            label: "Cash",
+                            value: $saveGame.party.cash,
+                            range: 0...SaveFileConstants.MaxValues.cash,
+                            onChange: markChanged
+                        )
+
+                        ValidatedNumberField(
+                            label: "Light Energy",
+                            value: $saveGame.party.lightEnergy,
+                            range: 0...SaveFileConstants.MaxValues.lightEnergy,
+                            onChange: markChanged
+                        )
                     }
                     .padding(8)
                 }
@@ -135,30 +135,33 @@ struct ContentView: View {
                 // Ship section
                 GroupBox(label: Label("Ship Software", systemImage: "airplane")) {
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Move:")
-                                .frame(width: 120, alignment: .leading)
-                            Text("\(saveGame.ship.move)")
-                                .fontWeight(.semibold)
-                        }
-                        HStack {
-                            Text("Target:")
-                                .frame(width: 120, alignment: .leading)
-                            Text("\(saveGame.ship.target)")
-                                .fontWeight(.semibold)
-                        }
-                        HStack {
-                            Text("Engine:")
-                                .frame(width: 120, alignment: .leading)
-                            Text("\(saveGame.ship.engine)")
-                                .fontWeight(.semibold)
-                        }
-                        HStack {
-                            Text("Laser:")
-                                .frame(width: 120, alignment: .leading)
-                            Text("\(saveGame.ship.laser)")
-                                .fontWeight(.semibold)
-                        }
+                        ValidatedNumberField(
+                            label: "Move",
+                            value: $saveGame.ship.move,
+                            range: 0...SaveFileConstants.MaxValues.shipSoftware,
+                            onChange: markChanged
+                        )
+
+                        ValidatedNumberField(
+                            label: "Target",
+                            value: $saveGame.ship.target,
+                            range: 0...SaveFileConstants.MaxValues.shipSoftware,
+                            onChange: markChanged
+                        )
+
+                        ValidatedNumberField(
+                            label: "Engine",
+                            value: $saveGame.ship.engine,
+                            range: 0...SaveFileConstants.MaxValues.shipSoftware,
+                            onChange: markChanged
+                        )
+
+                        ValidatedNumberField(
+                            label: "Laser",
+                            value: $saveGame.ship.laser,
+                            range: 0...SaveFileConstants.MaxValues.shipSoftware,
+                            onChange: markChanged
+                        )
                     }
                     .padding(8)
                 }
