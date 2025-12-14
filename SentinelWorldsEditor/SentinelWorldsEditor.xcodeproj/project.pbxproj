@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		9BE289A12EEEFCE30072E4C1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B7427822EEEF09400A01248 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B7427892EEEF09400A01248;
+			remoteInfo = SentinelWorldsEditor;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		9B74278A2EEEF09400A01248 /* SentinelWorldsEditor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SentinelWorldsEditor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9BE2899D2EEEFCE30072E4C1 /* SentinelWorldsEditorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SentinelWorldsEditorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = SentinelWorldsEditor;
 			sourceTree = "<group>";
 		};
+		9BE2899E2EEEFCE30072E4C1 /* SentinelWorldsEditorTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SentinelWorldsEditorTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		9B7427872EEEF09400A01248 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9BE2899A2EEEFCE30072E4C1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				9B74278C2EEEF09400A01248 /* SentinelWorldsEditor */,
+				9BE2899E2EEEFCE30072E4C1 /* SentinelWorldsEditorTests */,
 				9B74278B2EEEF09400A01248 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				9B74278A2EEEF09400A01248 /* SentinelWorldsEditor.app */,
+				9BE2899D2EEEFCE30072E4C1 /* SentinelWorldsEditorTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 9B74278A2EEEF09400A01248 /* SentinelWorldsEditor.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9BE2899C2EEEFCE30072E4C1 /* SentinelWorldsEditorTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9BE289A32EEEFCE30072E4C1 /* Build configuration list for PBXNativeTarget "SentinelWorldsEditorTests" */;
+			buildPhases = (
+				9BE289992EEEFCE30072E4C1 /* Sources */,
+				9BE2899A2EEEFCE30072E4C1 /* Frameworks */,
+				9BE2899B2EEEFCE30072E4C1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9BE289A22EEEFCE30072E4C1 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				9BE2899E2EEEFCE30072E4C1 /* SentinelWorldsEditorTests */,
+			);
+			name = SentinelWorldsEditorTests;
+			packageProductDependencies = (
+			);
+			productName = SentinelWorldsEditorTests;
+			productReference = 9BE2899D2EEEFCE30072E4C1 /* SentinelWorldsEditorTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					9B7427892EEEF09400A01248 = {
 						CreatedOnToolsVersion = 26.2;
+					};
+					9BE2899C2EEEFCE30072E4C1 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 9B7427892EEEF09400A01248;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				9B7427892EEEF09400A01248 /* SentinelWorldsEditor */,
+				9BE2899C2EEEFCE30072E4C1 /* SentinelWorldsEditorTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		9B7427882EEEF09400A01248 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9BE2899B2EEEFCE30072E4C1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9BE289992EEEFCE30072E4C1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9BE289A22EEEFCE30072E4C1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9B7427892EEEF09400A01248 /* SentinelWorldsEditor */;
+			targetProxy = 9BE289A12EEEFCE30072E4C1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		9B7427932EEEF09500A01248 /* Debug */ = {
@@ -303,6 +378,44 @@
 			};
 			name = Release;
 		};
+		9BE289A42EEEFCE30072E4C1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bigdinosaur.SentinelWorldsEditorTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SentinelWorldsEditor.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SentinelWorldsEditor";
+			};
+			name = Debug;
+		};
+		9BE289A52EEEFCE30072E4C1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bigdinosaur.SentinelWorldsEditorTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SentinelWorldsEditor.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SentinelWorldsEditor";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -320,6 +433,15 @@
 			buildConfigurations = (
 				9B7427962EEEF09500A01248 /* Debug */,
 				9B7427972EEEF09500A01248 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9BE289A32EEEFCE30072E4C1 /* Build configuration list for PBXNativeTarget "SentinelWorldsEditorTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9BE289A42EEEFCE30072E4C1 /* Debug */,
+				9BE289A52EEEFCE30072E4C1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
