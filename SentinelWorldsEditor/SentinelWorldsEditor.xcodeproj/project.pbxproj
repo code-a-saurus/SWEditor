@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9B038A572EEF6D0F0052AE05 /* PHASE2-MALLOC-ISSUE.md in Resources */ = {isa = PBXBuildFile; fileRef = 9B038A562EEF6D0F0052AE05 /* PHASE2-MALLOC-ISSUE.md */; };
+		9B038A592EEF6D300052AE05 /* swift-port-plan.md in Resources */ = {isa = PBXBuildFile; fileRef = 9B038A582EEF6D300052AE05 /* swift-port-plan.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9BE289A12EEEFCE30072E4C1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -17,6 +22,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9B038A562EEF6D0F0052AE05 /* PHASE2-MALLOC-ISSUE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "PHASE2-MALLOC-ISSUE.md"; sourceTree = "<group>"; };
+		9B038A582EEF6D300052AE05 /* swift-port-plan.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = "swift-port-plan.md"; path = "../swift-port-plan.md"; sourceTree = SOURCE_ROOT; };
 		9B74278A2EEEF09400A01248 /* SentinelWorldsEditor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SentinelWorldsEditor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BE2899D2EEEFCE30072E4C1 /* SentinelWorldsEditorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SentinelWorldsEditorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -55,6 +62,8 @@
 		9B7427812EEEF09400A01248 = {
 			isa = PBXGroup;
 			children = (
+				9B038A582EEF6D300052AE05 /* swift-port-plan.md */,
+				9B038A562EEF6D0F0052AE05 /* PHASE2-MALLOC-ISSUE.md */,
 				9B74278C2EEEF09400A01248 /* SentinelWorldsEditor */,
 				9BE2899E2EEEFCE30072E4C1 /* SentinelWorldsEditorTests */,
 				9B74278B2EEEF09400A01248 /* Products */,
@@ -162,6 +171,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B038A592EEF6D300052AE05 /* swift-port-plan.md in Resources */,
+				9B038A572EEF6D0F0052AE05 /* PHASE2-MALLOC-ISSUE.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
