@@ -42,14 +42,9 @@ struct ContentView: View {
 
         // NSOpenPanel provides read-write access automatically, no need for security-scoped resource
         do {
-            let backupCreated = try SaveFileService.save(saveGame, to: fileURL)
+            try SaveFileService.save(saveGame, to: fileURL)
             statusMessage = "\(fileURL.lastPathComponent) - Saved"
-
-            if backupCreated {
-                saveSuccessMessage = "File saved successfully. A backup was created with .bak extension."
-            } else {
-                saveSuccessMessage = "File saved successfully.\n\nNote: Could not create backup file due to directory permissions. Consider manually backing up your save files."
-            }
+            saveSuccessMessage = "File saved successfully."
             showingSaveSuccess = true
         } catch let error as SaveFileValidator.ValidationError {
             showError(error.localizedDescription)

@@ -60,7 +60,7 @@ struct SaveFileValidator {
             case .invalidSignature:
                 return "File does not appear to be a valid Sentinel Worlds save file (signature mismatch)"
             case .directoryNotWritable(let path):
-                return "Directory is not writable: \(path)\nCannot save changes or create backup files."
+                return "Directory is not writable: \(path)\nCannot save changes."
             case .ioError(let description):
                 return "Error reading file: \(description)"
             }
@@ -77,7 +77,7 @@ struct SaveFileValidator {
     /// - File size is reasonable (1KB-16KB)
     /// - File has "Sentinel" signature at 0x3181
     /// - Filename matches pattern gameX.fm (X = A-Z, case-insensitive)
-    /// - File location is writable (for saving and backup) - optional
+    /// - File location is writable (for saving) - optional
     ///
     /// - Parameters:
     ///   - url: URL of the file to validate
@@ -151,7 +151,7 @@ struct SaveFileValidator {
             throw ValidationError.ioError(description: error.localizedDescription)
         }
 
-        // Check directory is writable (needed for saving changes and creating backups)
+        // Check directory is writable (needed for saving changes)
         // This check is optional for read-only access
         if requireWritable {
             let directory = url.deletingLastPathComponent().path

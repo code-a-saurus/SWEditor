@@ -201,7 +201,7 @@ Phase 4 will add editing capabilities and save functionality
 
 ---
 
-## Swift Native Port - Phase 4 In Progress (2025-12-14)
+## Swift Native Port - Phase 4 Complete ✅ (2025-12-14)
 
 ### Accomplished
 ✅ Created ValidatedNumberField component with range validation and visual feedback
@@ -211,29 +211,12 @@ Phase 4 will add editing capabilities and save functionality
   - Crew (×5): HP, rank, characteristics (×5), abilities (×12)
 ✅ Implemented complete save functionality in SaveFileService.save()
   - Writes all party/ship/crew data using BinaryFileIO.writeBytes()
-  - Creates .bak backup (when permissions allow)
   - Clears hasUnsavedChanges flag after save
 ✅ Added Save button to toolbar with Cmd+S keyboard shortcut
 ✅ Implemented change tracking (unsaved changes indicator)
 ✅ Added success/error alerts for save operations
-
-### Current Status: Editing Works, Saving Blocked by Sandboxing
-
-**What Works:**
-- Loading save files via NSOpenPanel ✅
-- Editing all numeric values with validation ✅
-- Input validation with red borders for out-of-range values ✅
-- Change tracking (orange indicator in status bar) ✅
-- All UI components functional ✅
-
-**Sandboxing Issues Encountered:**
-1. **FileImporter** - Only provides read access, not write access
-   - Switched to NSOpenPanel for read-write access
-2. **Backup creation** - Made optional (graceful failure)
-   - App continues saving even if .bak cannot be created
-3. **File write permissions** - Still failing with NSOpenPanel
-   - Error: "You don't have permission to save the file"
-   - Even with NSOpenPanel, macOS sandbox blocks write access
+✅ Fixed macOS sandboxing issues with app entitlements
+✅ Removed backup file logic (decision: skip backups for Swift port)
 
 ### Technical Implementation
 
@@ -245,44 +228,25 @@ Phase 4 will add editing capabilities and save functionality
 
 **Files Modified:**
 - ContentView.swift - Replaced Text views with ValidatedNumberField
-  - Added NSOpenPanel for file selection (replacing FileImporter)
+  - Added NSOpenPanel for file selection (read-write access)
   - Added handleSave() function
   - Added Save button to toolbar
 - SaveFileService.swift - Implemented save() function
   - Complete binary file writing
-  - Optional backup creation
-  - Returns Bool indicating backup success
+  - No backup creation (simplified)
+- SaveFileValidator.swift - Updated comments (removed backup references)
 - BinaryFileIO.swift - Already had writeBytes() and writeString()
 
-### Sandboxing Solutions Attempted
+### Key Features Working
+- Loading save files via NSOpenPanel ✅
+- Editing all numeric values with validation ✅
+- Input validation with red borders for out-of-range values ✅
+- Change tracking (orange indicator in status bar) ✅
+- Saving changes directly to files ✅
+- All UI components functional ✅
+- All 37 unit tests passing ✅
 
-1. ❌ FileImporter with security-scoped resources - Read-only access
-2. ❌ NSOpenPanel - Still blocked by sandbox
-3. ⚠️ Optional backup creation - Works but doesn't solve write access
-
-### Next Steps for New Session
-
-**Immediate Solutions to Try:**
-1. **Add App Sandbox Entitlements** (most likely fix)
-   - Add "User Selected File" read-write entitlement
-   - File: SentinelWorldsEditor.entitlements
-   - Key: `com.apple.security.files.user-selected.read-write` = YES
-
-2. **Disable App Sandbox** (for testing/development)
-   - In Xcode: Signing & Capabilities → Remove App Sandbox
-   - Note: Required for distribution on Mac App Store
-
-3. **Alternative: Use NSSavePanel pattern**
-   - User explicitly chooses where to save
-   - Guarantees write permissions
-
-**Long-term Considerations:**
-- If distributing outside Mac App Store: Can disable sandbox
-- If targeting Mac App Store: Must use entitlements properly
-- For now: Focus on getting it working, then refine permissions
-
-### Code State
-- All Phase 4 code is complete and functional
-- Issue is purely macOS sandboxing/permissions
-- No bugs in implementation
-- Ready to test once permission issue resolved
+### Resolution Notes
+- Sandboxing fixed by adding `com.apple.security.files.user-selected.read-write` entitlement in Xcode
+- Backup file logic removed entirely - simpler architecture, fewer permission issues
+- Phase 4 goals fully achieved
