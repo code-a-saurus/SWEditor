@@ -410,6 +410,30 @@ Phase 7 will add macOS polish and final integration
 - GroupBox organization for visual hierarchy
 - ScrollView for long content areas
 
+### Bug Fixes (Post-Initial Implementation)
+
+**Issue 1: Invalid Selection Errors**
+- Problem: "selection 255 is invalid" warnings for empty slots (0xFF)
+- Root cause: 0xFF not included in validArmor and validWeapons sets
+- Solution: Modified dropdown functions to always insert 0xFF and current value
+- Result: All slots can be set to "Empty Slot", no more invalid selection warnings ✅
+
+**Issue 2: Dropdown Values Not Updating**
+- Problem: Could see dropdown items but selections wouldn't change
+- Root cause: CrewMember not ObservableObject, so Picker changes didn't trigger view updates
+- Solution: Added @State variables for all 13 equipment slots
+  - Initialize from crew member in init()
+  - Bindings update @State (triggers view refresh) then sync to crew.equipment
+  - updateEquipment() helper manages sync and onChanged callback
+- Result: Dropdown selections update properly, unsaved indicator triggers ✅
+
+**Final Status:**
+- All equipment editing fully functional ✅
+- All 13 dropdowns working across all 5 crew members ✅
+- Empty slots (0xFF) supported ✅
+- Change tracking working ✅
+- All 37 unit tests passing ✅
+
 ### Next Phase
 Phase 7 will add macOS polish:
 - Window title with filename and edited state

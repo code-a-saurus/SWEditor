@@ -21,23 +21,72 @@ struct EquipmentEditor: View {
     let crew: CrewMember
     let onChanged: () -> Void
 
+    // State variables to track selections (needed for SwiftUI reactivity)
+    @State private var selectedArmor: UInt8
+    @State private var selectedWeapon: UInt8
+    @State private var selectedOnhandWeapon1: UInt8
+    @State private var selectedOnhandWeapon2: UInt8
+    @State private var selectedOnhandWeapon3: UInt8
+    @State private var selectedInventory1: UInt8
+    @State private var selectedInventory2: UInt8
+    @State private var selectedInventory3: UInt8
+    @State private var selectedInventory4: UInt8
+    @State private var selectedInventory5: UInt8
+    @State private var selectedInventory6: UInt8
+    @State private var selectedInventory7: UInt8
+    @State private var selectedInventory8: UInt8
+
+    // Initialize state from crew member
+    init(crew: CrewMember, onChanged: @escaping () -> Void) {
+        self.crew = crew
+        self.onChanged = onChanged
+        _selectedArmor = State(initialValue: crew.equipment.armor)
+        _selectedWeapon = State(initialValue: crew.equipment.weapon)
+        _selectedOnhandWeapon1 = State(initialValue: crew.equipment.onhandWeapon1)
+        _selectedOnhandWeapon2 = State(initialValue: crew.equipment.onhandWeapon2)
+        _selectedOnhandWeapon3 = State(initialValue: crew.equipment.onhandWeapon3)
+        _selectedInventory1 = State(initialValue: crew.equipment.inventory1)
+        _selectedInventory2 = State(initialValue: crew.equipment.inventory2)
+        _selectedInventory3 = State(initialValue: crew.equipment.inventory3)
+        _selectedInventory4 = State(initialValue: crew.equipment.inventory4)
+        _selectedInventory5 = State(initialValue: crew.equipment.inventory5)
+        _selectedInventory6 = State(initialValue: crew.equipment.inventory6)
+        _selectedInventory7 = State(initialValue: crew.equipment.inventory7)
+        _selectedInventory8 = State(initialValue: crew.equipment.inventory8)
+    }
+
     // Sorted item lists for dropdowns
-    private var armorItems: [UInt8] {
-        Array(ItemConstants.validArmor).sorted { itemA, itemB in
+    // Always include 0xFF (Empty Slot) and current value to avoid picker errors
+    private func armorItems(currentValue: UInt8) -> [UInt8] {
+        var items = ItemConstants.validArmor
+        items.insert(0xFF)  // Always allow Empty Slot
+        items.insert(currentValue)  // Always include current value
+        return items.sorted { itemA, itemB in
             ItemConstants.itemName(for: itemA) < ItemConstants.itemName(for: itemB)
         }
     }
 
-    private var weaponItems: [UInt8] {
-        Array(ItemConstants.validWeapons).sorted { itemA, itemB in
+    private func weaponItems(currentValue: UInt8) -> [UInt8] {
+        var items = ItemConstants.validWeapons
+        items.insert(0xFF)  // Always allow Empty Slot
+        items.insert(currentValue)  // Always include current value
+        return items.sorted { itemA, itemB in
             ItemConstants.itemName(for: itemA) < ItemConstants.itemName(for: itemB)
         }
     }
 
-    private var inventoryItems: [UInt8] {
-        Array(ItemConstants.validInventory).sorted { itemA, itemB in
+    private func inventoryItems(currentValue: UInt8) -> [UInt8] {
+        var items = ItemConstants.validInventory
+        items.insert(currentValue)  // Always include current value (0xFF already in set)
+        return items.sorted { itemA, itemB in
             ItemConstants.itemName(for: itemA) < ItemConstants.itemName(for: itemB)
         }
+    }
+
+    // Helper to update crew member and trigger change callback
+    private func updateEquipment<T>(_ keyPath: WritableKeyPath<Equipment, T>, value: T) {
+        crew.equipment[keyPath: keyPath] = value
+        onChanged()
     }
 
     var body: some View {
@@ -54,11 +103,14 @@ struct EquipmentEditor: View {
                         ItemPicker(
                             label: "Armor",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.armor },
-                                set: { crew.equipment.armor = $0 }
+                                get: { selectedArmor },
+                                set: { newValue in
+                                    selectedArmor = newValue
+                                    updateEquipment(\.armor, value: newValue)
+                                }
                             ),
-                            validItems: armorItems,
-                            onChange: onChanged
+                            validItems: armorItems(currentValue: selectedArmor),
+                            onChange: {}  // updateEquipment already calls onChanged
                         )
                     }
                     .padding(10)
@@ -70,11 +122,14 @@ struct EquipmentEditor: View {
                         ItemPicker(
                             label: "Weapon",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.weapon },
-                                set: { crew.equipment.weapon = $0 }
+                                get: { selectedWeapon },
+                                set: { newValue in
+                                    selectedWeapon = newValue
+                                    updateEquipment(\.weapon, value: newValue)
+                                }
                             ),
-                            validItems: weaponItems,
-                            onChange: onChanged
+                            validItems: weaponItems(currentValue: selectedWeapon),
+                            onChange: {}  // updateEquipment already calls onChanged
                         )
                     }
                     .padding(10)
@@ -86,31 +141,40 @@ struct EquipmentEditor: View {
                         ItemPicker(
                             label: "Slot 1",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.onhandWeapon1 },
-                                set: { crew.equipment.onhandWeapon1 = $0 }
+                                get: { selectedOnhandWeapon1 },
+                                set: { newValue in
+                                    selectedOnhandWeapon1 = newValue
+                                    updateEquipment(\.onhandWeapon1, value: newValue)
+                                }
                             ),
-                            validItems: weaponItems,
-                            onChange: onChanged
+                            validItems: weaponItems(currentValue: selectedOnhandWeapon1),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 2",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.onhandWeapon2 },
-                                set: { crew.equipment.onhandWeapon2 = $0 }
+                                get: { selectedOnhandWeapon2 },
+                                set: { newValue in
+                                    selectedOnhandWeapon2 = newValue
+                                    updateEquipment(\.onhandWeapon2, value: newValue)
+                                }
                             ),
-                            validItems: weaponItems,
-                            onChange: onChanged
+                            validItems: weaponItems(currentValue: selectedOnhandWeapon2),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 3",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.onhandWeapon3 },
-                                set: { crew.equipment.onhandWeapon3 = $0 }
+                                get: { selectedOnhandWeapon3 },
+                                set: { newValue in
+                                    selectedOnhandWeapon3 = newValue
+                                    updateEquipment(\.onhandWeapon3, value: newValue)
+                                }
                             ),
-                            validItems: weaponItems,
-                            onChange: onChanged
+                            validItems: weaponItems(currentValue: selectedOnhandWeapon3),
+                            onChange: {}
                         )
                     }
                     .padding(10)
@@ -122,81 +186,105 @@ struct EquipmentEditor: View {
                         ItemPicker(
                             label: "Slot 1",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.inventory1 },
-                                set: { crew.equipment.inventory1 = $0 }
+                                get: { selectedInventory1 },
+                                set: { newValue in
+                                    selectedInventory1 = newValue
+                                    updateEquipment(\.inventory1, value: newValue)
+                                }
                             ),
-                            validItems: inventoryItems,
-                            onChange: onChanged
+                            validItems: inventoryItems(currentValue: selectedInventory1),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 2",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.inventory2 },
-                                set: { crew.equipment.inventory2 = $0 }
+                                get: { selectedInventory2 },
+                                set: { newValue in
+                                    selectedInventory2 = newValue
+                                    updateEquipment(\.inventory2, value: newValue)
+                                }
                             ),
-                            validItems: inventoryItems,
-                            onChange: onChanged
+                            validItems: inventoryItems(currentValue: selectedInventory2),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 3",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.inventory3 },
-                                set: { crew.equipment.inventory3 = $0 }
+                                get: { selectedInventory3 },
+                                set: { newValue in
+                                    selectedInventory3 = newValue
+                                    updateEquipment(\.inventory3, value: newValue)
+                                }
                             ),
-                            validItems: inventoryItems,
-                            onChange: onChanged
+                            validItems: inventoryItems(currentValue: selectedInventory3),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 4",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.inventory4 },
-                                set: { crew.equipment.inventory4 = $0 }
+                                get: { selectedInventory4 },
+                                set: { newValue in
+                                    selectedInventory4 = newValue
+                                    updateEquipment(\.inventory4, value: newValue)
+                                }
                             ),
-                            validItems: inventoryItems,
-                            onChange: onChanged
+                            validItems: inventoryItems(currentValue: selectedInventory4),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 5",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.inventory5 },
-                                set: { crew.equipment.inventory5 = $0 }
+                                get: { selectedInventory5 },
+                                set: { newValue in
+                                    selectedInventory5 = newValue
+                                    updateEquipment(\.inventory5, value: newValue)
+                                }
                             ),
-                            validItems: inventoryItems,
-                            onChange: onChanged
+                            validItems: inventoryItems(currentValue: selectedInventory5),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 6",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.inventory6 },
-                                set: { crew.equipment.inventory6 = $0 }
+                                get: { selectedInventory6 },
+                                set: { newValue in
+                                    selectedInventory6 = newValue
+                                    updateEquipment(\.inventory6, value: newValue)
+                                }
                             ),
-                            validItems: inventoryItems,
-                            onChange: onChanged
+                            validItems: inventoryItems(currentValue: selectedInventory6),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 7",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.inventory7 },
-                                set: { crew.equipment.inventory7 = $0 }
+                                get: { selectedInventory7 },
+                                set: { newValue in
+                                    selectedInventory7 = newValue
+                                    updateEquipment(\.inventory7, value: newValue)
+                                }
                             ),
-                            validItems: inventoryItems,
-                            onChange: onChanged
+                            validItems: inventoryItems(currentValue: selectedInventory7),
+                            onChange: {}
                         )
 
                         ItemPicker(
                             label: "Slot 8",
                             selectedItemCode: Binding(
-                                get: { crew.equipment.inventory8 },
-                                set: { crew.equipment.inventory8 = $0 }
+                                get: { selectedInventory8 },
+                                set: { newValue in
+                                    selectedInventory8 = newValue
+                                    updateEquipment(\.inventory8, value: newValue)
+                                }
                             ),
-                            validItems: inventoryItems,
-                            onChange: onChanged
+                            validItems: inventoryItems(currentValue: selectedInventory8),
+                            onChange: {}
                         )
                     }
                     .padding(10)
