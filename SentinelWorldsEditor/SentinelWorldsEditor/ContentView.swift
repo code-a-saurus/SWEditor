@@ -27,10 +27,36 @@ struct ContentView: View {
     @State private var showingFilePicker = false
     @State private var showingError = false
     @State private var errorMessage = ""
+    @State private var showingSaveSuccess = false
 
     // Mark file as having unsaved changes
     private func markChanged() {
         saveGame.hasUnsavedChanges = true
+    }
+
+    // Save the current file
+    private func handleSave() {
+        guard let fileURL = saveGame.fileURL else { return }
+
+        // Request access to security-scoped resource (required for sandboxed apps)
+        guard fileURL.startAccessingSecurityScopedResource() else {
+            showError("Unable to access file for saving. Please try again.")
+            return
+        }
+
+        defer {
+            fileURL.stopAccessingSecurityScopedResource()
+        }
+
+        do {
+            try SaveFileService.save(saveGame, to: fileURL)
+            statusMessage = "\(fileURL.lastPathComponent) - Saved"
+            showingSaveSuccess = true
+        } catch let error as SaveFileValidator.ValidationError {
+            showError(error.localizedDescription)
+        } catch {
+            showError("Error saving file: \(error.localizedDescription)")
+        }
     }
 
     var body: some View {
@@ -57,6 +83,15 @@ struct ContentView: View {
                 .help("Open a save file (Cmd+O)")
                 .keyboardShortcut("o", modifiers: .command)
             }
+
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: handleSave) {
+                    Label("Save", systemImage: "square.and.arrow.down")
+                }
+                .help("Save changes (Cmd+S)")
+                .keyboardShortcut("s", modifiers: .command)
+                .disabled(saveGame.fileURL == nil || !saveGame.hasUnsavedChanges)
+            }
         }
         .fileImporter(
             isPresented: $showingFilePicker,
@@ -65,10 +100,15 @@ struct ContentView: View {
         ) { result in
             handleFileSelection(result)
         }
-        .alert("Error Loading File", isPresented: $showingError) {
+        .alert("Error", isPresented: $showingError) {
             Button("OK") { }
         } message: {
             Text(errorMessage)
+        }
+        .alert("Saved Successfully", isPresented: $showingSaveSuccess) {
+            Button("OK") { }
+        } message: {
+            Text("File saved successfully. A backup was created with .bak extension.")
         }
     }
 
@@ -172,16 +212,18 @@ struct ContentView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             // Basic stats
                             HStack(spacing: 20) {
-                                HStack {
-                                    Text("HP:")
-                                    Text("\(crew.hp)")
-                                        .fontWeight(.semibold)
-                                }
-                                HStack {
-                                    Text("Rank:")
-                                    Text("\(crew.rank)")
-                                        .fontWeight(.semibold)
-                                }
+                                ValidatedNumberField(
+                                    label: "HP",
+                                    value: $saveGame.crew[crew.id - 1].hp,
+                                    range: 0...SaveFileConstants.MaxValues.hp,
+                                    onChange: markChanged
+                                )
+                                ValidatedNumberField(
+                                    label: "Rank",
+                                    value: $saveGame.crew[crew.id - 1].rank,
+                                    range: 0...254,
+                                    onChange: markChanged
+                                )
                             }
 
                             Divider()
@@ -192,12 +234,37 @@ struct ContentView: View {
                                     .font(.headline)
                                     .padding(.bottom, 4)
 
-                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                                    statRow("Strength:", crew.characteristics.strength)
-                                    statRow("Stamina:", crew.characteristics.stamina)
-                                    statRow("Dexterity:", crew.characteristics.dexterity)
-                                    statRow("Comprehend:", crew.characteristics.comprehend)
-                                    statRow("Charisma:", crew.characteristics.charisma)
+                                VStack(alignment: .leading, spacing: 8) {
+                                    ValidatedNumberField(
+                                        label: "Strength",
+                                        value: $saveGame.crew[crew.id - 1].characteristics.strength,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Stamina",
+                                        value: $saveGame.crew[crew.id - 1].characteristics.stamina,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Dexterity",
+                                        value: $saveGame.crew[crew.id - 1].characteristics.dexterity,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Comprehend",
+                                        value: $saveGame.crew[crew.id - 1].characteristics.comprehend,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Charisma",
+                                        value: $saveGame.crew[crew.id - 1].characteristics.charisma,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
                                 }
                             }
 
@@ -209,19 +276,79 @@ struct ContentView: View {
                                     .font(.headline)
                                     .padding(.bottom, 4)
 
-                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                                    statRow("Contact:", crew.abilities.contact)
-                                    statRow("Edged:", crew.abilities.edged)
-                                    statRow("Projectile:", crew.abilities.projectile)
-                                    statRow("Blaster:", crew.abilities.blaster)
-                                    statRow("Tactics:", crew.abilities.tactics)
-                                    statRow("Recon:", crew.abilities.recon)
-                                    statRow("Gunnery:", crew.abilities.gunnery)
-                                    statRow("ATV Repair:", crew.abilities.atvRepair)
-                                    statRow("Mining:", crew.abilities.mining)
-                                    statRow("Athletics:", crew.abilities.athletics)
-                                    statRow("Observation:", crew.abilities.observation)
-                                    statRow("Bribery:", crew.abilities.bribery)
+                                VStack(alignment: .leading, spacing: 8) {
+                                    ValidatedNumberField(
+                                        label: "Contact",
+                                        value: $saveGame.crew[crew.id - 1].abilities.contact,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Edged",
+                                        value: $saveGame.crew[crew.id - 1].abilities.edged,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Projectile",
+                                        value: $saveGame.crew[crew.id - 1].abilities.projectile,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Blaster",
+                                        value: $saveGame.crew[crew.id - 1].abilities.blaster,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Tactics",
+                                        value: $saveGame.crew[crew.id - 1].abilities.tactics,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Recon",
+                                        value: $saveGame.crew[crew.id - 1].abilities.recon,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Gunnery",
+                                        value: $saveGame.crew[crew.id - 1].abilities.gunnery,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "ATV Repair",
+                                        value: $saveGame.crew[crew.id - 1].abilities.atvRepair,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Mining",
+                                        value: $saveGame.crew[crew.id - 1].abilities.mining,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Athletics",
+                                        value: $saveGame.crew[crew.id - 1].abilities.athletics,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Observation",
+                                        value: $saveGame.crew[crew.id - 1].abilities.observation,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
+                                    ValidatedNumberField(
+                                        label: "Bribery",
+                                        value: $saveGame.crew[crew.id - 1].abilities.bribery,
+                                        range: 0...SaveFileConstants.MaxValues.stat,
+                                        onChange: markChanged
+                                    )
                                 }
                             }
 
