@@ -40,12 +40,16 @@ struct SentinelWorldsEditorApp: App {
 
             // File menu commands
             CommandGroup(replacing: .saveItem) {
+                Button("Open...") {
+                    NotificationCenter.default.post(name: .openRequested, object: nil)
+                }
+                .keyboardShortcut("o", modifiers: .command)
+
                 Button("Save") {
-                    // Trigger save via notification
                     NotificationCenter.default.post(name: .saveRequested, object: nil)
                 }
                 .keyboardShortcut("s", modifiers: .command)
-                .disabled(appState.saveGame.fileURL == nil || !appState.saveGame.hasUnsavedChanges)
+                .disabled(!appState.canSave)
             }
 
             // Help menu with GPL license
@@ -62,7 +66,8 @@ struct SentinelWorldsEditorApp: App {
     }
 }
 
-// Notification name for save command
+// Notification names for menu commands
 extension Notification.Name {
     static let saveRequested = Notification.Name("saveRequested")
+    static let openRequested = Notification.Name("openRequested")
 }

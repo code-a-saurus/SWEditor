@@ -28,4 +28,10 @@ class AppState: ObservableObject {
 
     /// Flag to bypass the unsaved changes check (used when user chooses "Don't Save")
     var shouldTerminateWithoutSaving = false
+
+    /// Computed property to determine if Save menu item should be enabled
+    /// This property is observed by menu commands to enable/disable the Save button
+    var canSave: Bool {
+        saveGame.fileURL != nil && saveGame.hasUnsavedChanges
+    }
 }

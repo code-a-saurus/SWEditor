@@ -30,6 +30,8 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showingSaveSuccess = false
     @State private var saveSuccessMessage = ""
+    @State private var showingUnsavedChangesAlert = false
+    @State private var pendingFileURL: URL? // Store URL to load after handling unsaved changes
 
     // Tree navigation state
     @State private var treeNodes: [TreeNode] = []
@@ -112,11 +114,10 @@ struct ContentView: View {
         .frame(minWidth: 800, minHeight: 600)
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                Button(action: showOpenPanel) {
+                Button(action: initiateOpenFile) {
                     Label("Open File", systemImage: "folder")
                 }
                 .help("Open a save file (Cmd+O)")
-                .keyboardShortcut("o", modifiers: .command)
             }
 
             ToolbarItem(placement: .primaryAction) {
@@ -124,7 +125,6 @@ struct ContentView: View {
                     Label("Save", systemImage: "square.and.arrow.down")
                 }
                 .help("Save changes (Cmd+S)")
-                .keyboardShortcut("s", modifiers: .command)
                 .disabled(saveGame.fileURL == nil || !saveGame.hasUnsavedChanges)
             }
         }
@@ -148,8 +148,24 @@ struct ContentView: View {
         .sheet(isPresented: $appState.showGPLLicense) {
             GPLLicenseView()
         }
+        .alert("Unsaved Changes", isPresented: $showingUnsavedChangesAlert) {
+            Button("Save") {
+                handleSaveBeforeOpen()
+            }
+            Button("Don't Save", role: .destructive) {
+                handleDontSaveBeforeOpen()
+            }
+            Button("Cancel", role: .cancel) {
+                pendingFileURL = nil
+            }
+        } message: {
+            Text("Do you want to save changes before opening a new file?")
+        }
         .onReceive(NotificationCenter.default.publisher(for: .saveRequested)) { _ in
             handleSave()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openRequested)) { _ in
+            initiateOpenFile()
         }
     }
 
@@ -216,7 +232,7 @@ struct ContentView: View {
                 .frame(width: 300)
                 .padding()
 
-            Button(action: showOpenPanel) {
+            Button(action: initiateOpenFile) {
                 Label("Open Save File", systemImage: "folder")
                     .font(.headline)
             }
@@ -234,6 +250,66 @@ struct ContentView: View {
 
     // MARK: - File Handling
 
+    /// Initiates the file open process, checking for unsaved changes first
+    private func initiateOpenFile() {
+        // Check if there are unsaved changes
+        if saveGame.hasUnsavedChanges && saveGame.fileURL != nil {
+            // Show alert - the actual open will happen after user responds
+            pendingFileURL = nil // Will be set when user picks a file
+            showOpenPanelWithUnsavedCheck()
+        } else {
+            // No unsaved changes, proceed directly to open panel
+            showOpenPanel()
+        }
+    }
+
+    /// Shows open panel, but will check for unsaved changes before loading
+    private func showOpenPanelWithUnsavedCheck() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [UTType(filenameExtension: "fm") ?? .data]
+        panel.message = "Choose a save file to edit"
+        panel.prompt = "Open"
+
+        panel.begin { response in
+            if response == .OK, let url = panel.url {
+                // Store the URL and show unsaved changes alert
+                self.pendingFileURL = url
+                self.showingUnsavedChangesAlert = true
+            }
+        }
+    }
+
+    /// Handles "Save" choice in unsaved changes alert
+    private func handleSaveBeforeOpen() {
+        guard let fileURL = saveGame.fileURL else {
+            // No file to save, just proceed to open
+            handleDontSaveBeforeOpen()
+            return
+        }
+
+        do {
+            try SaveFileService.save(saveGame, to: fileURL)
+            // Save successful, now open the pending file
+            if let pendingURL = pendingFileURL {
+                loadSaveFileDirectly(url: pendingURL)
+            }
+        } catch {
+            showError("Failed to save: \(error.localizedDescription)")
+        }
+        pendingFileURL = nil
+    }
+
+    /// Handles "Don't Save" choice in unsaved changes alert
+    private func handleDontSaveBeforeOpen() {
+        if let pendingURL = pendingFileURL {
+            loadSaveFileDirectly(url: pendingURL)
+        }
+        pendingFileURL = nil
+    }
+
     private func showOpenPanel() {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
@@ -245,7 +321,7 @@ struct ContentView: View {
 
         panel.begin { response in
             if response == .OK, let url = panel.url {
-                loadSaveFile(url: url)
+                loadSaveFileDirectly(url: url)
             }
         }
     }
@@ -254,13 +330,14 @@ struct ContentView: View {
         switch result {
         case .success(let urls):
             guard let url = urls.first else { return }
-            loadSaveFile(url: url)
+            loadSaveFileDirectly(url: url)
         case .failure(let error):
             showError("Failed to select file: \(error.localizedDescription)")
         }
     }
 
-    private func loadSaveFile(url: URL) {
+    /// Loads a save file without checking for unsaved changes (internal use)
+    private func loadSaveFileDirectly(url: URL) {
         // NSOpenPanel provides read-write access automatically, no need for security-scoped resource
         do {
             let loadedGame = try SaveFileService.load(from: url)
