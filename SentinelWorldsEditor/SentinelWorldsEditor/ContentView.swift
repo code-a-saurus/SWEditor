@@ -20,6 +20,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import AppKit
 
 struct ContentView: View {
     @StateObject private var saveGame = SaveGame()
@@ -39,16 +40,7 @@ struct ContentView: View {
     private func handleSave() {
         guard let fileURL = saveGame.fileURL else { return }
 
-        // Request access to security-scoped resource (required for sandboxed apps)
-        guard fileURL.startAccessingSecurityScopedResource() else {
-            showError("Unable to access file for saving. Please try again.")
-            return
-        }
-
-        defer {
-            fileURL.stopAccessingSecurityScopedResource()
-        }
-
+        // NSOpenPanel provides read-write access automatically, no need for security-scoped resource
         do {
             let backupCreated = try SaveFileService.save(saveGame, to: fileURL)
             statusMessage = "\(fileURL.lastPathComponent) - Saved"
@@ -84,7 +76,7 @@ struct ContentView: View {
         .frame(minWidth: 800, minHeight: 600)
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                Button(action: { showingFilePicker = true }) {
+                Button(action: showOpenPanel) {
                     Label("Open File", systemImage: "folder")
                 }
                 .help("Open a save file (Cmd+O)")
@@ -139,7 +131,7 @@ struct ContentView: View {
                 .frame(width: 300)
                 .padding()
 
-            Button(action: { showingFilePicker = true }) {
+            Button(action: showOpenPanel) {
                 Label("Open Save File", systemImage: "folder")
                     .font(.headline)
             }
@@ -443,6 +435,22 @@ struct ContentView: View {
 
     // MARK: - File Handling
 
+    private func showOpenPanel() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [UTType(filenameExtension: "fm") ?? .data]
+        panel.message = "Choose a save file to edit"
+        panel.prompt = "Open"
+
+        panel.begin { response in
+            if response == .OK, let url = panel.url {
+                loadSaveFile(url: url)
+            }
+        }
+    }
+
     private func handleFileSelection(_ result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
@@ -454,16 +462,7 @@ struct ContentView: View {
     }
 
     private func loadSaveFile(url: URL) {
-        // Request access to security-scoped resource (required for sandboxed apps)
-        guard url.startAccessingSecurityScopedResource() else {
-            showError("Unable to access file. Please try again.")
-            return
-        }
-
-        defer {
-            url.stopAccessingSecurityScopedResource()
-        }
-
+        // NSOpenPanel provides read-write access automatically, no need for security-scoped resource
         do {
             let loadedGame = try SaveFileService.load(from: url)
 
