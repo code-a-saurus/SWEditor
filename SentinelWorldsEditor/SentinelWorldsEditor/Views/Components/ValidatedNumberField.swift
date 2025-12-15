@@ -26,8 +26,9 @@ struct ValidatedNumberField: View {
     @Binding var value: Int
     var isFocused: FocusState<Bool>.Binding
     let range: ClosedRange<Int>
-    let onCommit: () -> Void  // Renamed from onChange to clarify it's called on commit
+    let onCommit: (_ oldValue: Int, _ newValue: Int) -> Void  // Passes old and new values
     var originalValue: Int? = nil  // Optional original value for comparison
+    var undoManager: UndoManager? = nil  // Optional undo manager
 
     private var isValid: Bool {
         range.contains(value)
@@ -38,6 +39,8 @@ struct ValidatedNumberField: View {
         guard let original = originalValue else { return false }
         return value != original
     }
+
+    @State private var previousValue: Int = 0
 
     var body: some View {
         HStack {
@@ -51,7 +54,18 @@ struct ValidatedNumberField: View {
                 .focused(isFocused)
                 .onSubmit {
                     // Trigger when user presses Return
-                    onCommit()
+                    if value != previousValue {
+                        onCommit(previousValue, value)
+                        previousValue = value
+                    }
+                }
+                .onAppear {
+                    // Initialize previousValue when view appears
+                    previousValue = value
+                }
+                .onChange(of: value) { oldValue, newValue in
+                    // Update previousValue when value changes externally (e.g., from undo)
+                    // But don't trigger onCommit here
                 }
 
             if isValid {
@@ -91,7 +105,7 @@ struct ValidatedNumberField: View {
                     value: $hp,
                     isFocused: $isHPFocused,
                     range: 0...125,
-                    onCommit: { print("HP committed: \(hp)") }
+                    onCommit: { old, new in print("HP committed: \(old) -> \(new)") }
                 )
 
                 ValidatedNumberField(
@@ -99,7 +113,7 @@ struct ValidatedNumberField: View {
                     value: $invalidHP,
                     isFocused: $isInvalidHPFocused,
                     range: 0...125,
-                    onCommit: { print("Invalid HP committed: \(invalidHP)") }
+                    onCommit: { old, new in print("Invalid HP committed: \(old) -> \(new)") }
                 )
 
                 ValidatedNumberField(
@@ -107,7 +121,7 @@ struct ValidatedNumberField: View {
                     value: $cash,
                     isFocused: $isCashFocused,
                     range: 0...655359,
-                    onCommit: { print("Cash committed: \(cash)") }
+                    onCommit: { old, new in print("Cash committed: \(old) -> \(new)") }
                 )
             }
             .padding()

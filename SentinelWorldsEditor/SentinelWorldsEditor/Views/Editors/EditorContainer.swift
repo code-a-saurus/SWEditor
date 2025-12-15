@@ -20,6 +20,7 @@ struct EditorContainer: View {
     @ObservedObject var saveGame: SaveGame
     let selectedNode: TreeNode.NodeType?
     let onChanged: () -> Void
+    var undoManager: UndoManager? = nil
 
     var body: some View {
         Group {
@@ -29,56 +30,71 @@ struct EditorContainer: View {
                 case .partyCash:
                     PartyCashEditor(
                         party: saveGame.party,
+                        saveGame: saveGame,
                         onChanged: onChanged,
-                        originalCash: saveGame.originalValues?.partyCash
+                        originalCash: saveGame.originalValues?.partyCash,
+                        undoManager: undoManager
                     )
 
                 case .partyLight:
                     PartyLightEditor(
                         party: saveGame.party,
+                        saveGame: saveGame,
                         onChanged: onChanged,
-                        originalLightEnergy: saveGame.originalValues?.partyLightEnergy
+                        originalLightEnergy: saveGame.originalValues?.partyLightEnergy,
+                        undoManager: undoManager
                     )
 
                 // Ship editors
                 case .shipSoftware:
                     ShipSoftwareEditor(
                         ship: saveGame.ship,
+                        saveGame: saveGame,
                         onChanged: onChanged,
                         originalMove: saveGame.originalValues?.shipMove,
                         originalTarget: saveGame.originalValues?.shipTarget,
                         originalEngine: saveGame.originalValues?.shipEngine,
-                        originalLaser: saveGame.originalValues?.shipLaser
+                        originalLaser: saveGame.originalValues?.shipLaser,
+                        undoManager: undoManager
                     )
 
                 // Crew editors
                 case .crewCharacteristics(let crewNumber):
                     CharacteristicsEditor(
                         crew: saveGame.crew[crewNumber - 1],
+                        saveGame: saveGame,
                         onChanged: onChanged,
-                        originalCharacteristics: saveGame.originalValues?.crew[crewNumber - 1].characteristics
+                        originalCharacteristics: saveGame.originalValues?.crew[crewNumber - 1].characteristics,
+                        undoManager: undoManager
                     )
 
                 case .crewAbilities(let crewNumber):
                     AbilitiesEditor(
                         crew: saveGame.crew[crewNumber - 1],
+                        saveGame: saveGame,
                         onChanged: onChanged,
-                        originalAbilities: saveGame.originalValues?.crew[crewNumber - 1].abilities
+                        originalAbilities: saveGame.originalValues?.crew[crewNumber - 1].abilities,
+                        undoManager: undoManager
                     )
 
                 case .crewHP(let crewNumber):
                     HPEditor(
                         crew: saveGame.crew[crewNumber - 1],
+                        saveGame: saveGame,
                         onChanged: onChanged,
                         originalHP: saveGame.originalValues?.crew[crewNumber - 1].hp,
-                        originalRank: saveGame.originalValues?.crew[crewNumber - 1].rank
+                        originalRank: saveGame.originalValues?.crew[crewNumber - 1].rank,
+                        undoManager: undoManager
                     )
+                    .id("hp-\(crewNumber)")
 
                 case .crewEquipment(let crewNumber):
                     EquipmentEditor(
                         crew: saveGame.crew[crewNumber - 1],
+                        saveGame: saveGame,
                         onChanged: onChanged,
-                        originalEquipment: saveGame.originalValues?.crew[crewNumber - 1].equipment
+                        originalEquipment: saveGame.originalValues?.crew[crewNumber - 1].equipment,
+                        undoManager: undoManager
                     )
 
                 // Parent nodes (no direct editor)

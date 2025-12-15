@@ -22,8 +22,9 @@ struct ItemPicker: View {
     let label: String
     @Binding var selectedItemCode: UInt8
     let validItems: [UInt8]
-    let onChange: () -> Void
+    let onChange: (_ oldValue: UInt8, _ newValue: UInt8) -> Void
     var originalItemCode: UInt8? = nil
+    var undoManager: UndoManager? = nil
 
     var body: some View {
         HStack {
@@ -40,7 +41,7 @@ struct ItemPicker: View {
             .frame(width: 200)
             .onChange(of: selectedItemCode) { oldValue, newValue in
                 if oldValue != newValue {
-                    onChange()
+                    onChange(oldValue, newValue)
                 }
             }
 

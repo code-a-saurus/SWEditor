@@ -14,13 +14,16 @@
 // GNU General Public License for more details.
 
 import SwiftUI
+import Combine
 
 /// Editor for crew member hit points and rank
 struct HPEditor: View {
     let crew: CrewMember
+    let saveGame: SaveGame
     let onChanged: () -> Void
     var originalHP: Int? = nil
     var originalRank: Int? = nil
+    var undoManager: UndoManager? = nil
 
     // Use @State to enable proper SwiftUI change detection
     @State private var hp: Int = 0
@@ -41,11 +44,12 @@ struct HPEditor: View {
                 value: $hp,
                 isFocused: $isHPFocused,
                 range: 0...SaveFileConstants.MaxValues.hp,
-                onCommit: {
+                onCommit: { oldValue, newValue in
                     // Sync to model (but don't mark as changed yet)
                     crew.hp = hp
                 },
-                originalValue: originalHP
+                originalValue: originalHP,
+                undoManager: undoManager
             )
 
             ValidatedNumberField(
@@ -53,11 +57,12 @@ struct HPEditor: View {
                 value: $rank,
                 isFocused: $isRankFocused,
                 range: 0...SaveFileConstants.MaxValues.rank,
-                onCommit: {
+                onCommit: { oldValue, newValue in
                     // Sync to model (but don't mark as changed yet)
                     crew.rank = rank
                 },
-                originalValue: originalRank
+                originalValue: originalRank,
+                undoManager: undoManager
             )
 
             Spacer()
@@ -70,17 +75,51 @@ struct HPEditor: View {
             rank = crew.rank
         }
         .onChange(of: isHPFocused) { wasFocused, isNowFocused in
-            // When HP field loses focus, mark as changed
-            if wasFocused && !isNowFocused {
+            // When HP field loses focus, register undo and mark as changed
+            if wasFocused && !isNowFocused && crew.hp != hp {
+                let oldValue = crew.hp
+                let targetCrew = crew
+                let targetSaveGame = saveGame
                 crew.hp = hp
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetCrew.hp = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change \(crew.name) HP")
+
                 onChanged()
             }
         }
         .onChange(of: isRankFocused) { wasFocused, isNowFocused in
-            // When Rank field loses focus, mark as changed
-            if wasFocused && !isNowFocused {
+            // When Rank field loses focus, register undo and mark as changed
+            if wasFocused && !isNowFocused && crew.rank != rank {
+                let oldValue = crew.rank
+                let targetCrew = crew
+                let targetSaveGame = saveGame
                 crew.rank = rank
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetCrew.rank = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change \(crew.name) Rank")
+
                 onChanged()
+            }
+        }
+        .onReceive(saveGame.objectWillChange) { _ in
+            // Sync @State when saveGame changes (from undo/redo)
+            // Only update if this field isn't currently focused
+            if !isHPFocused {
+                hp = crew.hp
+            }
+            if !isRankFocused {
+                rank = crew.rank
             }
         }
     }

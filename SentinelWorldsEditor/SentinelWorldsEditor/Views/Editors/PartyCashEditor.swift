@@ -14,12 +14,15 @@
 // GNU General Public License for more details.
 
 import SwiftUI
+import Combine
 
 /// Editor for party cash
 struct PartyCashEditor: View {
     let party: Party
+    let saveGame: SaveGame
     let onChanged: () -> Void
     var originalCash: Int? = nil
+    var undoManager: UndoManager? = nil
 
     @State private var cash: Int = 0
     @FocusState private var isCashFocused: Bool
@@ -35,10 +38,11 @@ struct PartyCashEditor: View {
                 value: $cash,
                 isFocused: $isCashFocused,
                 range: 0...SaveFileConstants.MaxValues.cash,
-                onCommit: {
+                onCommit: { oldValue, newValue in
                     party.cash = cash
                 },
-                originalValue: originalCash
+                originalValue: originalCash,
+                undoManager: undoManager
             )
 
             Spacer()
@@ -49,9 +53,28 @@ struct PartyCashEditor: View {
             cash = party.cash
         }
         .onChange(of: isCashFocused) { wasFocused, isNowFocused in
-            if wasFocused && !isNowFocused {
+            if wasFocused && !isNowFocused && party.cash != cash {
+                let oldValue = party.cash
+                let targetParty = party
+                let targetSaveGame = saveGame
                 party.cash = cash
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetParty.cash = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change Cash")
+
                 onChanged()
+            }
+        }
+        .onReceive(saveGame.objectWillChange) { _ in
+            // Sync @State when saveGame changes (from undo/redo)
+            // Only update if this field isn't currently focused
+            if !isCashFocused {
+                cash = party.cash
             }
         }
     }

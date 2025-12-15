@@ -48,6 +48,12 @@ struct SentinelWorldsEditorApp: App {
                 SaveCommand()
             }
 
+            // Edit menu with Undo/Redo
+            CommandGroup(replacing: .undoRedo) {
+                UndoCommand()
+                RedoCommand()
+            }
+
             // Help menu with GPL license
             CommandGroup(after: .help) {
                 Divider()
@@ -66,6 +72,8 @@ struct SentinelWorldsEditorApp: App {
 extension Notification.Name {
     static let saveRequested = Notification.Name("saveRequested")
     static let openRequested = Notification.Name("openRequested")
+    static let undoRequested = Notification.Name("undoRequested")
+    static let redoRequested = Notification.Name("redoRequested")
 }
 
 // Save command that uses focused values for proper reactivity
@@ -78,5 +86,31 @@ struct SaveCommand: View {
         }
         .keyboardShortcut("s", modifiers: .command)
         .disabled(!(canSave ?? false))
+    }
+}
+
+// Undo command that uses focused values for proper reactivity
+struct UndoCommand: View {
+    @FocusedValue(\.canUndo) private var canUndo: Bool?
+
+    var body: some View {
+        Button("Undo") {
+            NotificationCenter.default.post(name: .undoRequested, object: nil)
+        }
+        .keyboardShortcut("z", modifiers: .command)
+        .disabled(!(canUndo ?? false))
+    }
+}
+
+// Redo command that uses focused values for proper reactivity
+struct RedoCommand: View {
+    @FocusedValue(\.canRedo) private var canRedo: Bool?
+
+    var body: some View {
+        Button("Redo") {
+            NotificationCenter.default.post(name: .redoRequested, object: nil)
+        }
+        .keyboardShortcut("z", modifiers: [.command, .shift])
+        .disabled(!(canRedo ?? false))
     }
 }

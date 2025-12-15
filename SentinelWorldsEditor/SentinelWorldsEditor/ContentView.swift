@@ -103,7 +103,8 @@ struct ContentView: View {
                     EditorContainer(
                         saveGame: saveGame,
                         selectedNode: selectedNode,
-                        onChanged: markChanged
+                        onChanged: markChanged,
+                        undoManager: appState.undoManager
                     )
                 }
                 .navigationTitle(windowTitle)
@@ -171,6 +172,12 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .openRequested)) { _ in
             initiateOpenFile()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .undoRequested)) { _ in
+            appState.undoManager.undo()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .redoRequested)) { _ in
+            appState.undoManager.redo()
+        }
         .accessWindow(window: $window)
         .onAppear {
             // Set up window delegate
@@ -188,6 +195,9 @@ struct ContentView: View {
             window?.isDocumentEdited = hasChanges
         }
         .focusedSceneValue(\.canSave, saveGame.fileURL != nil && saveGame.hasUnsavedChanges)
+        .focusedSceneValue(\.canUndo, appState.canUndo)
+        .focusedSceneValue(\.canRedo, appState.canRedo)
+        .focusedSceneValue(\.undoManager, appState.undoManager)
     }
 
     // MARK: - Tree Navigation
@@ -370,6 +380,9 @@ struct ContentView: View {
             appState.saveGame.fileURL = loadedGame.fileURL
             appState.saveGame.hasUnsavedChanges = loadedGame.hasUnsavedChanges
             appState.saveGame.originalValues = loadedGame.originalValues
+
+            // Clear undo history when loading a new file
+            appState.clearUndoHistory()
 
             // Build navigation tree
             treeNodes = TreeNode.buildTree(from: appState.saveGame)

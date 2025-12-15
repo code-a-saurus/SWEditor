@@ -14,15 +14,18 @@
 // GNU General Public License for more details.
 
 import SwiftUI
+import Combine
 
 /// Editor for all ship software values
 struct ShipSoftwareEditor: View {
     let ship: Ship
+    let saveGame: SaveGame
     let onChanged: () -> Void
     var originalMove: Int? = nil
     var originalTarget: Int? = nil
     var originalEngine: Int? = nil
     var originalLaser: Int? = nil
+    var undoManager: UndoManager? = nil
 
     @State private var move: Int = 0
     @State private var target: Int = 0
@@ -45,10 +48,11 @@ struct ShipSoftwareEditor: View {
                 value: $move,
                 isFocused: $isMoveFocused,
                 range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                onCommit: {
+                onCommit: { oldValue, newValue in
                     ship.move = move
                 },
-                originalValue: originalMove
+                originalValue: originalMove,
+                undoManager: undoManager
             )
 
             ValidatedNumberField(
@@ -56,10 +60,11 @@ struct ShipSoftwareEditor: View {
                 value: $target,
                 isFocused: $isTargetFocused,
                 range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                onCommit: {
+                onCommit: { oldValue, newValue in
                     ship.target = target
                 },
-                originalValue: originalTarget
+                originalValue: originalTarget,
+                undoManager: undoManager
             )
 
             ValidatedNumberField(
@@ -67,10 +72,11 @@ struct ShipSoftwareEditor: View {
                 value: $engine,
                 isFocused: $isEngineFocused,
                 range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                onCommit: {
+                onCommit: { oldValue, newValue in
                     ship.engine = engine
                 },
-                originalValue: originalEngine
+                originalValue: originalEngine,
+                undoManager: undoManager
             )
 
             ValidatedNumberField(
@@ -78,10 +84,11 @@ struct ShipSoftwareEditor: View {
                 value: $laser,
                 isFocused: $isLaserFocused,
                 range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                onCommit: {
+                onCommit: { oldValue, newValue in
                     ship.laser = laser
                 },
-                originalValue: originalLaser
+                originalValue: originalLaser,
+                undoManager: undoManager
             )
 
             Spacer()
@@ -95,27 +102,91 @@ struct ShipSoftwareEditor: View {
             laser = ship.laser
         }
         .onChange(of: isMoveFocused) { wasFocused, isNowFocused in
-            if wasFocused && !isNowFocused {
+            if wasFocused && !isNowFocused && ship.move != move {
+                let oldValue = ship.move
+                let targetShip = ship
+                let targetSaveGame = saveGame
                 ship.move = move
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetShip.move = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change Ship MOVE")
+
                 onChanged()
             }
         }
         .onChange(of: isTargetFocused) { wasFocused, isNowFocused in
-            if wasFocused && !isNowFocused {
+            if wasFocused && !isNowFocused && ship.target != target {
+                let oldValue = ship.target
+                let targetShip = ship
+                let targetSaveGame = saveGame
                 ship.target = target
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetShip.target = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change Ship TARGET")
+
                 onChanged()
             }
         }
         .onChange(of: isEngineFocused) { wasFocused, isNowFocused in
-            if wasFocused && !isNowFocused {
+            if wasFocused && !isNowFocused && ship.engine != engine {
+                let oldValue = ship.engine
+                let targetShip = ship
+                let targetSaveGame = saveGame
                 ship.engine = engine
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetShip.engine = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change Ship ENGINE")
+
                 onChanged()
             }
         }
         .onChange(of: isLaserFocused) { wasFocused, isNowFocused in
-            if wasFocused && !isNowFocused {
+            if wasFocused && !isNowFocused && ship.laser != laser {
+                let oldValue = ship.laser
+                let targetShip = ship
+                let targetSaveGame = saveGame
                 ship.laser = laser
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetShip.laser = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change Ship LASER")
+
                 onChanged()
+            }
+        }
+        .onReceive(saveGame.objectWillChange) { _ in
+            // Sync @State when saveGame changes (from undo/redo)
+            // Only update if this field isn't currently focused
+            if !isMoveFocused {
+                move = ship.move
+            }
+            if !isTargetFocused {
+                target = ship.target
+            }
+            if !isEngineFocused {
+                engine = ship.engine
+            }
+            if !isLaserFocused {
+                laser = ship.laser
             }
         }
     }

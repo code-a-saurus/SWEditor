@@ -25,9 +25,39 @@ struct FocusedCanSaveKey: FocusedValueKey {
     typealias Value = Bool
 }
 
+/// Focused value for determining if undo is available
+struct FocusedCanUndoKey: FocusedValueKey {
+    typealias Value = Bool
+}
+
+/// Focused value for determining if redo is available
+struct FocusedCanRedoKey: FocusedValueKey {
+    typealias Value = Bool
+}
+
+/// Focused value for the undo manager
+struct FocusedUndoManagerKey: FocusedValueKey {
+    typealias Value = UndoManager
+}
+
 extension FocusedValues {
     var canSave: Bool? {
         get { self[FocusedCanSaveKey.self] }
         set { self[FocusedCanSaveKey.self] = newValue }
+    }
+
+    var canUndo: Bool? {
+        get { self[FocusedCanUndoKey.self] }
+        set { self[FocusedCanUndoKey.self] = newValue }
+    }
+
+    var canRedo: Bool? {
+        get { self[FocusedCanRedoKey.self] }
+        set { self[FocusedCanRedoKey.self] = newValue }
+    }
+
+    var undoManager: UndoManager? {
+        get { self[FocusedUndoManagerKey.self] }
+        set { self[FocusedUndoManagerKey.self] = newValue }
     }
 }

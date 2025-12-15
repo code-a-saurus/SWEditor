@@ -14,12 +14,15 @@
 // GNU General Public License for more details.
 
 import SwiftUI
+import Combine
 
 /// Editor for party light energy
 struct PartyLightEditor: View {
     let party: Party
+    let saveGame: SaveGame
     let onChanged: () -> Void
     var originalLightEnergy: Int? = nil
+    var undoManager: UndoManager? = nil
 
     @State private var lightEnergy: Int = 0
     @FocusState private var isLightEnergyFocused: Bool
@@ -35,10 +38,11 @@ struct PartyLightEditor: View {
                 value: $lightEnergy,
                 isFocused: $isLightEnergyFocused,
                 range: 0...SaveFileConstants.MaxValues.lightEnergy,
-                onCommit: {
+                onCommit: { oldValue, newValue in
                     party.lightEnergy = lightEnergy
                 },
-                originalValue: originalLightEnergy
+                originalValue: originalLightEnergy,
+                undoManager: undoManager
             )
 
             Spacer()
@@ -49,9 +53,28 @@ struct PartyLightEditor: View {
             lightEnergy = party.lightEnergy
         }
         .onChange(of: isLightEnergyFocused) { wasFocused, isNowFocused in
-            if wasFocused && !isNowFocused {
+            if wasFocused && !isNowFocused && party.lightEnergy != lightEnergy {
+                let oldValue = party.lightEnergy
+                let targetParty = party
+                let targetSaveGame = saveGame
                 party.lightEnergy = lightEnergy
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetParty.lightEnergy = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change Light Energy")
+
                 onChanged()
+            }
+        }
+        .onReceive(saveGame.objectWillChange) { _ in
+            // Sync @State when saveGame changes (from undo/redo)
+            // Only update if this field isn't currently focused
+            if !isLightEnergyFocused {
+                lightEnergy = party.lightEnergy
             }
         }
     }

@@ -33,6 +33,13 @@ class AppState: ObservableObject {
     /// This is updated whenever saveGame changes to trigger menu updates
     @Published var canSave: Bool = false
 
+    /// Global undo manager for all edits
+    let undoManager = UndoManager()
+
+    /// Published properties for undo/redo menu state
+    @Published var canUndo: Bool = false
+    @Published var canRedo: Bool = false
+
     private var cancellables = Set<AnyCancellable>()
 
     init() {
@@ -44,6 +51,16 @@ class AppState: ObservableObject {
                 self?.updateCanSave()
             }
             .store(in: &cancellables)
+
+        // Update undo/redo state when undo manager changes
+        NotificationCenter.default.publisher(for: .NSUndoManagerDidUndoChange, object: undoManager)
+            .merge(with: NotificationCenter.default.publisher(for: .NSUndoManagerDidRedoChange, object: undoManager))
+            .merge(with: NotificationCenter.default.publisher(for: .NSUndoManagerDidCloseUndoGroup, object: undoManager))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateUndoRedoState()
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates the canSave property based on current saveGame state
@@ -53,5 +70,17 @@ class AppState: ObservableObject {
         if canSave != newValue {
             canSave = newValue
         }
+    }
+
+    /// Updates the undo/redo state based on UndoManager
+    private func updateUndoRedoState() {
+        canUndo = undoManager.canUndo
+        canRedo = undoManager.canRedo
+    }
+
+    /// Clears all undo/redo history (called when loading a new file)
+    func clearUndoHistory() {
+        undoManager.removeAllActions()
+        updateUndoRedoState()
     }
 }
