@@ -1178,3 +1178,144 @@ The application is **ready for beta testing** and can be deployed to users after
 **Total Implementation Time:** ~2 days (faster than 1-2 week estimate due to excellent planning)
 
 **Next Immediate Step:** Manual testing with real save files to verify all functionality before deployment.
+
+---
+
+## Phase 8: Menu Bar Integration & UX Polish (2025-12-15)
+
+### Completed Features ✅
+
+#### 1. **Menu Bar Command Integration**
+- Added "Open..." command to File menu (Cmd+O)
+- Fixed "Save" command in File menu (Cmd+S)
+- Implemented reactive menu state using FocusedValue system
+- Files created:
+  - `FocusedValues.swift` - SwiftUI FocusedValue system for menu commands
+  - `SaveCommand` struct in `SentinelWorldsEditorApp.swift`
+
+#### 2. **Unsaved Changes Protection**
+- **Window close protection**: Clicking red close button shows save prompt
+- **Open file protection**: Opening new file with unsaved changes shows prompt
+- **Quit protection**: Cmd+Q with unsaved changes shows prompt (already implemented)
+- Files created:
+  - `WindowDelegate.swift` - NSWindowDelegate for window close interception
+  - `WindowAccessor.swift` - Helper to access NSWindow from SwiftUI
+- Visual indicator: Dot appears in red close button when file has unsaved changes
+- Set via `window.isDocumentEdited = true`
+
+#### 3. **Reactive Menu Commands**
+- **Challenge**: Menu commands in `.commands {}` block don't automatically react to state changes
+- **Solution**: SwiftUI FocusedValue system
+  - ContentView provides: `.focusedSceneValue(\.canSave, ...)`
+  - SaveCommand reads: `@FocusedValue(\.canSave)`
+  - This is the Apple-recommended pattern for menu command state
+- **Result**: Save menu item properly enables/disables based on file state
+
+#### 4. **Technical Improvements**
+- Made `SaveGame.fileURL` a `@Published` property for proper change notifications
+- Added Combine subscription in AppState to forward saveGame changes
+- Ensured all state updates run on main thread via `.receive(on: DispatchQueue.main)`
+
+### Architecture Notes
+
+**FocusedValue Pattern for Menus:**
+```swift
+// 1. Define the key
+struct FocusedCanSaveKey: FocusedValueKey {
+    typealias Value = Bool
+}
+
+// 2. Provide from view
+.focusedSceneValue(\.canSave, saveGame.fileURL != nil && saveGame.hasUnsavedChanges)
+
+// 3. Read in menu command
+@FocusedValue(\.canSave) private var canSave: Bool?
+```
+
+**Window Delegate Pattern:**
+- ContentView holds `WindowDelegate` instance
+- Accesses NSWindow via custom `WindowAccessor` NSViewRepresentable
+- Sets window delegate to intercept close events
+- Shows modal alert sheet attached to window
+
+### Files Modified/Created
+- ✅ `SentinelWorldsEditorApp.swift` - Menu commands with SaveCommand struct
+- ✅ `ContentView.swift` - Window management, focused values, unsaved changes prompts
+- ✅ `AppState.swift` - Combine subscription for menu state updates
+- ✅ `Models/SaveGame.swift` - Made fileURL @Published
+- ✅ `WindowDelegate.swift` - NEW: Window close handling
+- ✅ `WindowAccessor.swift` - NEW: NSWindow access from SwiftUI
+- ✅ `FocusedValues.swift` - NEW: Menu command state system
+
+### Known Issues
+
+#### 1. **Change Detection Granularity** ⚠️
+- **Issue**: Changes only detected when moving between top-level tree groups
+- **Symptom**: Editing two items within same group (e.g., ship software Move vs Target, or light energy vs credits) doesn't trigger unsaved changes flag
+- **Cause**: Likely related to how `markChanged()` is called in editors
+- **Priority**: HIGH - affects user experience and data loss prevention
+
+#### 2. **No Original Value Display**
+- **Issue**: When editing a stat, no visual indication of original value
+- **Enhancement**: Show original value alongside current value when edited
+- **Example**: "HP: 85 (was 75)" or similar
+- **Priority**: MEDIUM - quality of life feature
+
+#### 3. **No Undo/Redo System**
+- **Issue**: No global undo/redo (Cmd+Z / Cmd+Shift+Z)
+- **Requirement**: Multi-step undo/redo across all editable fields
+- **Implementation**: Need UndoManager integration
+- **Priority**: MEDIUM - expected macOS behavior
+
+### Next Steps
+
+1. **Fix Change Detection** (HIGH PRIORITY)
+   - Investigate why changes within same group don't mark file as changed
+   - Check `markChanged()` callback propagation in all editors
+   - Test: Edit party cash → light energy without changing groups
+   - Expected: Should mark as unsaved
+
+2. **Add Original Value Display** (MEDIUM PRIORITY)
+   - Store original values when file is loaded
+   - Display alongside edited values in editors
+   - Visual differentiation (color, font style, or parenthetical)
+
+3. **Implement Undo/Redo** (MEDIUM PRIORITY)
+   - Integrate NSUndoManager with SwiftUI
+   - Register undo actions for all editable fields
+   - Add Cmd+Z / Cmd+Shift+Z menu commands
+   - Consider grouping related changes (e.g., all characteristics)
+
+4. **Additional Testing**
+   - Test all three unsaved changes prompts (quit, close, open)
+   - Verify menu commands enable/disable correctly
+   - Test with multiple rapid edits
+   - Verify dot indicator in close button
+
+### Current Build Status
+- ✅ **Build:** Clean (zero errors)
+- ⚠️ **Warnings:** 3 deprecation warnings for `onChange(of:perform:)` (not critical)
+- ✅ **Tests:** All 37 unit tests passing
+
+---
+
+## Session Summary (2025-12-15)
+
+**Goal:** Add menu bar integration and unsaved changes protection
+
+**Achievements:**
+- File → Open... menu command with Cmd+O
+- File → Save menu command with reactive enable/disable
+- Unsaved changes prompts for quit, close, and open operations
+- Visual dot indicator in window close button
+- Proper SwiftUI FocusedValue pattern for menu commands
+
+**Challenges Overcome:**
+- Menu commands not reacting to state changes → FocusedValue system
+- Window close not intercepted → WindowDelegate with NSWindowDelegate
+- Accessing NSWindow from SwiftUI → WindowAccessor NSViewRepresentable
+
+**Next Session Focus:**
+- Fix change detection within same tree group
+- Add original value display for edited fields
+- Implement global undo/redo system
