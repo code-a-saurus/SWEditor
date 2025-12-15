@@ -23,6 +23,7 @@ struct ItemPicker: View {
     @Binding var selectedItemCode: UInt8
     let validItems: [UInt8]
     let onChange: () -> Void
+    var originalItemCode: UInt8? = nil
 
     var body: some View {
         HStack {
@@ -37,8 +38,17 @@ struct ItemPicker: View {
             }
             .pickerStyle(.menu)
             .frame(width: 200)
-            .onChange(of: selectedItemCode) {
-                onChange()
+            .onChange(of: selectedItemCode) { oldValue, newValue in
+                if oldValue != newValue {
+                    onChange()
+                }
+            }
+
+            // Display original value if it differs from current selection
+            if let original = originalItemCode, selectedItemCode != original {
+                Text("(was: \"\(ItemConstants.itemName(for: original))\")")
+                    .font(.caption)
+                    .foregroundColor(.orange)
             }
         }
     }

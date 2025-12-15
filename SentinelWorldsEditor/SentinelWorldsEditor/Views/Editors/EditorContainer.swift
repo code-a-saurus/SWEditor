@@ -27,38 +27,58 @@ struct EditorContainer: View {
                 switch nodeType {
                 // Party editors
                 case .partyCash:
-                    PartyCashEditor(party: saveGame.party, onChanged: onChanged)
+                    PartyCashEditor(
+                        party: saveGame.party,
+                        onChanged: onChanged,
+                        originalCash: saveGame.originalValues?.partyCash
+                    )
 
                 case .partyLight:
-                    PartyLightEditor(party: saveGame.party, onChanged: onChanged)
+                    PartyLightEditor(
+                        party: saveGame.party,
+                        onChanged: onChanged,
+                        originalLightEnergy: saveGame.originalValues?.partyLightEnergy
+                    )
 
                 // Ship editors
                 case .shipSoftware:
-                    ShipSoftwareEditor(ship: saveGame.ship, onChanged: onChanged)
+                    ShipSoftwareEditor(
+                        ship: saveGame.ship,
+                        onChanged: onChanged,
+                        originalMove: saveGame.originalValues?.shipMove,
+                        originalTarget: saveGame.originalValues?.shipTarget,
+                        originalEngine: saveGame.originalValues?.shipEngine,
+                        originalLaser: saveGame.originalValues?.shipLaser
+                    )
 
                 // Crew editors
                 case .crewCharacteristics(let crewNumber):
                     CharacteristicsEditor(
                         crew: saveGame.crew[crewNumber - 1],
-                        onChanged: onChanged
+                        onChanged: onChanged,
+                        originalCharacteristics: saveGame.originalValues?.crew[crewNumber - 1].characteristics
                     )
 
                 case .crewAbilities(let crewNumber):
                     AbilitiesEditor(
                         crew: saveGame.crew[crewNumber - 1],
-                        onChanged: onChanged
+                        onChanged: onChanged,
+                        originalAbilities: saveGame.originalValues?.crew[crewNumber - 1].abilities
                     )
 
                 case .crewHP(let crewNumber):
                     HPEditor(
                         crew: saveGame.crew[crewNumber - 1],
-                        onChanged: onChanged
+                        onChanged: onChanged,
+                        originalHP: saveGame.originalValues?.crew[crewNumber - 1].hp,
+                        originalRank: saveGame.originalValues?.crew[crewNumber - 1].rank
                     )
 
                 case .crewEquipment(let crewNumber):
                     EquipmentEditor(
                         crew: saveGame.crew[crewNumber - 1],
-                        onChanged: onChanged
+                        onChanged: onChanged,
+                        originalEquipment: saveGame.originalValues?.crew[crewNumber - 1].equipment
                     )
 
                 // Parent nodes (no direct editor)

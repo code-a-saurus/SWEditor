@@ -19,6 +19,10 @@ import SwiftUI
 struct PartyLightEditor: View {
     let party: Party
     let onChanged: () -> Void
+    var originalLightEnergy: Int? = nil
+
+    @State private var lightEnergy: Int = 0
+    @FocusState private var isLightEnergyFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -28,17 +32,27 @@ struct PartyLightEditor: View {
 
             ValidatedNumberField(
                 label: "Light Energy",
-                value: Binding(
-                    get: { party.lightEnergy },
-                    set: { party.lightEnergy = $0 }
-                ),
+                value: $lightEnergy,
+                isFocused: $isLightEnergyFocused,
                 range: 0...SaveFileConstants.MaxValues.lightEnergy,
-                onChange: onChanged
+                onCommit: {
+                    party.lightEnergy = lightEnergy
+                },
+                originalValue: originalLightEnergy
             )
 
             Spacer()
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            lightEnergy = party.lightEnergy
+        }
+        .onChange(of: isLightEnergyFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                party.lightEnergy = lightEnergy
+                onChanged()
+            }
+        }
     }
 }

@@ -19,6 +19,10 @@ import SwiftUI
 struct PartyCashEditor: View {
     let party: Party
     let onChanged: () -> Void
+    var originalCash: Int? = nil
+
+    @State private var cash: Int = 0
+    @FocusState private var isCashFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -28,17 +32,27 @@ struct PartyCashEditor: View {
 
             ValidatedNumberField(
                 label: "Cash",
-                value: Binding(
-                    get: { party.cash },
-                    set: { party.cash = $0 }
-                ),
+                value: $cash,
+                isFocused: $isCashFocused,
                 range: 0...SaveFileConstants.MaxValues.cash,
-                onChange: onChanged
+                onCommit: {
+                    party.cash = cash
+                },
+                originalValue: originalCash
             )
 
             Spacer()
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            cash = party.cash
+        }
+        .onChange(of: isCashFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                party.cash = cash
+                onChanged()
+            }
+        }
     }
 }

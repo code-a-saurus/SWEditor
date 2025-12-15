@@ -19,6 +19,35 @@ import SwiftUI
 struct AbilitiesEditor: View {
     let crew: CrewMember
     let onChanged: () -> Void
+    var originalAbilities: Abilities? = nil
+
+    // Use @State to enable proper SwiftUI change detection
+    @State private var contact: Int = 0
+    @State private var edged: Int = 0
+    @State private var projectile: Int = 0
+    @State private var blaster: Int = 0
+    @State private var tactics: Int = 0
+    @State private var recon: Int = 0
+    @State private var gunnery: Int = 0
+    @State private var atvRepair: Int = 0
+    @State private var mining: Int = 0
+    @State private var athletics: Int = 0
+    @State private var observation: Int = 0
+    @State private var bribery: Int = 0
+
+    // Focus state for each field to detect when editing completes
+    @FocusState private var isContactFocused: Bool
+    @FocusState private var isEdgedFocused: Bool
+    @FocusState private var isProjectileFocused: Bool
+    @FocusState private var isBlasterFocused: Bool
+    @FocusState private var isTacticsFocused: Bool
+    @FocusState private var isReconFocused: Bool
+    @FocusState private var isGunneryFocused: Bool
+    @FocusState private var isAtvRepairFocused: Bool
+    @FocusState private var isMiningFocused: Bool
+    @FocusState private var isAthleticsFocused: Bool
+    @FocusState private var isObservationFocused: Bool
+    @FocusState private var isBriberyFocused: Bool
 
     var body: some View {
         ScrollView {
@@ -30,127 +59,238 @@ struct AbilitiesEditor: View {
                 VStack(alignment: .leading, spacing: 12) {
                     ValidatedNumberField(
                         label: "Contact",
-                        value: Binding(
-                            get: { crew.abilities.contact },
-                            set: { crew.abilities.contact = $0 }
-                        ),
+                        value: $contact,
+                        isFocused: $isContactFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.contact = contact
+                        },
+                        originalValue: originalAbilities?.contact
                     )
 
                     ValidatedNumberField(
                         label: "Edged",
-                        value: Binding(
-                            get: { crew.abilities.edged },
-                            set: { crew.abilities.edged = $0 }
-                        ),
+                        value: $edged,
+                        isFocused: $isEdgedFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.edged = edged
+                            
+                        },
+                        originalValue: originalAbilities?.edged
                     )
 
                     ValidatedNumberField(
                         label: "Projectile",
-                        value: Binding(
-                            get: { crew.abilities.projectile },
-                            set: { crew.abilities.projectile = $0 }
-                        ),
+                        value: $projectile,
+                        isFocused: $isProjectileFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.projectile = projectile
+                            
+                        },
+                        originalValue: originalAbilities?.projectile
                     )
 
                     ValidatedNumberField(
                         label: "Blaster",
-                        value: Binding(
-                            get: { crew.abilities.blaster },
-                            set: { crew.abilities.blaster = $0 }
-                        ),
+                        value: $blaster,
+                        isFocused: $isBlasterFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.blaster = blaster
+                            
+                        },
+                        originalValue: originalAbilities?.blaster
                     )
 
                     ValidatedNumberField(
                         label: "Tactics",
-                        value: Binding(
-                            get: { crew.abilities.tactics },
-                            set: { crew.abilities.tactics = $0 }
-                        ),
+                        value: $tactics,
+                        isFocused: $isTacticsFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.tactics = tactics
+                            
+                        },
+                        originalValue: originalAbilities?.tactics
                     )
 
                     ValidatedNumberField(
                         label: "Recon",
-                        value: Binding(
-                            get: { crew.abilities.recon },
-                            set: { crew.abilities.recon = $0 }
-                        ),
+                        value: $recon,
+                        isFocused: $isReconFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.recon = recon
+                            
+                        },
+                        originalValue: originalAbilities?.recon
                     )
 
                     ValidatedNumberField(
                         label: "Gunnery",
-                        value: Binding(
-                            get: { crew.abilities.gunnery },
-                            set: { crew.abilities.gunnery = $0 }
-                        ),
+                        value: $gunnery,
+                        isFocused: $isGunneryFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.gunnery = gunnery
+                            
+                        },
+                        originalValue: originalAbilities?.gunnery
                     )
 
                     ValidatedNumberField(
                         label: "ATV Repair",
-                        value: Binding(
-                            get: { crew.abilities.atvRepair },
-                            set: { crew.abilities.atvRepair = $0 }
-                        ),
+                        value: $atvRepair,
+                        isFocused: $isAtvRepairFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.atvRepair = atvRepair
+                            onChanged()
+                        },
+                        originalValue: originalAbilities?.atvRepair
                     )
 
                     ValidatedNumberField(
                         label: "Mining",
-                        value: Binding(
-                            get: { crew.abilities.mining },
-                            set: { crew.abilities.mining = $0 }
-                        ),
+                        value: $mining,
+                        isFocused: $isMiningFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.mining = mining
+                            
+                        },
+                        originalValue: originalAbilities?.mining
                     )
 
                     ValidatedNumberField(
                         label: "Athletics",
-                        value: Binding(
-                            get: { crew.abilities.athletics },
-                            set: { crew.abilities.athletics = $0 }
-                        ),
+                        value: $athletics,
+                        isFocused: $isAthleticsFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.athletics = athletics
+                            
+                        },
+                        originalValue: originalAbilities?.athletics
                     )
 
                     ValidatedNumberField(
                         label: "Observation",
-                        value: Binding(
-                            get: { crew.abilities.observation },
-                            set: { crew.abilities.observation = $0 }
-                        ),
+                        value: $observation,
+                        isFocused: $isObservationFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.observation = observation
+                            
+                        },
+                        originalValue: originalAbilities?.observation
                     )
 
                     ValidatedNumberField(
                         label: "Bribery",
-                        value: Binding(
-                            get: { crew.abilities.bribery },
-                            set: { crew.abilities.bribery = $0 }
-                        ),
+                        value: $bribery,
+                        isFocused: $isBriberyFocused,
                         range: 0...SaveFileConstants.MaxValues.stat,
-                        onChange: onChanged
+                        onCommit: {
+                            crew.abilities.bribery = bribery
+                            
+                        },
+                        originalValue: originalAbilities?.bribery
                     )
                 }
             }
             .padding()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            // Initialize @State from model when view appears
+            contact = crew.abilities.contact
+            edged = crew.abilities.edged
+            projectile = crew.abilities.projectile
+            blaster = crew.abilities.blaster
+            tactics = crew.abilities.tactics
+            recon = crew.abilities.recon
+            gunnery = crew.abilities.gunnery
+            atvRepair = crew.abilities.atvRepair
+            mining = crew.abilities.mining
+            athletics = crew.abilities.athletics
+            observation = crew.abilities.observation
+            bribery = crew.abilities.bribery
+        }
+        // Detect when each field loses focus and mark as changed
+        .onChange(of: isContactFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.contact = contact
+                onChanged()
+            }
+        }
+        .onChange(of: isEdgedFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.edged = edged
+                onChanged()
+            }
+        }
+        .onChange(of: isProjectileFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.projectile = projectile
+                onChanged()
+            }
+        }
+        .onChange(of: isBlasterFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.blaster = blaster
+                onChanged()
+            }
+        }
+        .onChange(of: isTacticsFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.tactics = tactics
+                onChanged()
+            }
+        }
+        .onChange(of: isReconFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.recon = recon
+                onChanged()
+            }
+        }
+        .onChange(of: isGunneryFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.gunnery = gunnery
+                onChanged()
+            }
+        }
+        .onChange(of: isAtvRepairFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.atvRepair = atvRepair
+                onChanged()
+            }
+        }
+        .onChange(of: isMiningFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.mining = mining
+                onChanged()
+            }
+        }
+        .onChange(of: isAthleticsFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.athletics = athletics
+                onChanged()
+            }
+        }
+        .onChange(of: isObservationFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.observation = observation
+                onChanged()
+            }
+        }
+        .onChange(of: isBriberyFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.abilities.bribery = bribery
+                onChanged()
+            }
+        }
     }
 }

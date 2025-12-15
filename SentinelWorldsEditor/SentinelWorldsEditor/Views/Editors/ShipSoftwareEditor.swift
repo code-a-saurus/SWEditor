@@ -19,6 +19,20 @@ import SwiftUI
 struct ShipSoftwareEditor: View {
     let ship: Ship
     let onChanged: () -> Void
+    var originalMove: Int? = nil
+    var originalTarget: Int? = nil
+    var originalEngine: Int? = nil
+    var originalLaser: Int? = nil
+
+    @State private var move: Int = 0
+    @State private var target: Int = 0
+    @State private var engine: Int = 0
+    @State private var laser: Int = 0
+
+    @FocusState private var isMoveFocused: Bool
+    @FocusState private var isTargetFocused: Bool
+    @FocusState private var isEngineFocused: Bool
+    @FocusState private var isLaserFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -28,47 +42,81 @@ struct ShipSoftwareEditor: View {
 
             ValidatedNumberField(
                 label: "MOVE",
-                value: Binding(
-                    get: { ship.move },
-                    set: { ship.move = $0 }
-                ),
+                value: $move,
+                isFocused: $isMoveFocused,
                 range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                onChange: onChanged
+                onCommit: {
+                    ship.move = move
+                },
+                originalValue: originalMove
             )
 
             ValidatedNumberField(
                 label: "TARGET",
-                value: Binding(
-                    get: { ship.target },
-                    set: { ship.target = $0 }
-                ),
+                value: $target,
+                isFocused: $isTargetFocused,
                 range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                onChange: onChanged
+                onCommit: {
+                    ship.target = target
+                },
+                originalValue: originalTarget
             )
 
             ValidatedNumberField(
                 label: "ENGINE",
-                value: Binding(
-                    get: { ship.engine },
-                    set: { ship.engine = $0 }
-                ),
+                value: $engine,
+                isFocused: $isEngineFocused,
                 range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                onChange: onChanged
+                onCommit: {
+                    ship.engine = engine
+                },
+                originalValue: originalEngine
             )
 
             ValidatedNumberField(
                 label: "LASER",
-                value: Binding(
-                    get: { ship.laser },
-                    set: { ship.laser = $0 }
-                ),
+                value: $laser,
+                isFocused: $isLaserFocused,
                 range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                onChange: onChanged
+                onCommit: {
+                    ship.laser = laser
+                },
+                originalValue: originalLaser
             )
 
             Spacer()
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            move = ship.move
+            target = ship.target
+            engine = ship.engine
+            laser = ship.laser
+        }
+        .onChange(of: isMoveFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                ship.move = move
+                onChanged()
+            }
+        }
+        .onChange(of: isTargetFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                ship.target = target
+                onChanged()
+            }
+        }
+        .onChange(of: isEngineFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                ship.engine = engine
+                onChanged()
+            }
+        }
+        .onChange(of: isLaserFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                ship.laser = laser
+                onChanged()
+            }
+        }
     }
 }

@@ -19,6 +19,21 @@ import SwiftUI
 struct CharacteristicsEditor: View {
     let crew: CrewMember
     let onChanged: () -> Void
+    var originalCharacteristics: Characteristics? = nil
+
+    // Use @State to enable proper SwiftUI change detection
+    @State private var strength: Int = 0
+    @State private var stamina: Int = 0
+    @State private var dexterity: Int = 0
+    @State private var comprehend: Int = 0
+    @State private var charisma: Int = 0
+
+    // Focus state for each field to detect when editing completes
+    @FocusState private var isStrengthFocused: Bool
+    @FocusState private var isStaminaFocused: Bool
+    @FocusState private var isDexterityFocused: Bool
+    @FocusState private var isComprehendFocused: Bool
+    @FocusState private var isCharismaFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -29,52 +44,57 @@ struct CharacteristicsEditor: View {
             VStack(alignment: .leading, spacing: 12) {
                 ValidatedNumberField(
                     label: "Strength",
-                    value: Binding(
-                        get: { crew.characteristics.strength },
-                        set: { crew.characteristics.strength = $0 }
-                    ),
+                    value: $strength,
+                    isFocused: $isStrengthFocused,
                     range: 0...SaveFileConstants.MaxValues.stat,
-                    onChange: onChanged
+                    onCommit: {
+                        crew.characteristics.strength = strength
+                    },
+                    originalValue: originalCharacteristics?.strength
                 )
 
                 ValidatedNumberField(
                     label: "Stamina",
-                    value: Binding(
-                        get: { crew.characteristics.stamina },
-                        set: { crew.characteristics.stamina = $0 }
-                    ),
+                    value: $stamina,
+                    isFocused: $isStaminaFocused,
                     range: 0...SaveFileConstants.MaxValues.stat,
-                    onChange: onChanged
+                    onCommit: {
+                        crew.characteristics.stamina = stamina
+                    },
+                    originalValue: originalCharacteristics?.stamina
                 )
 
                 ValidatedNumberField(
                     label: "Dexterity",
-                    value: Binding(
-                        get: { crew.characteristics.dexterity },
-                        set: { crew.characteristics.dexterity = $0 }
-                    ),
+                    value: $dexterity,
+                    isFocused: $isDexterityFocused,
                     range: 0...SaveFileConstants.MaxValues.stat,
-                    onChange: onChanged
+                    onCommit: {
+                        crew.characteristics.dexterity = dexterity
+                    },
+                    originalValue: originalCharacteristics?.dexterity
                 )
 
                 ValidatedNumberField(
                     label: "Comprehend",
-                    value: Binding(
-                        get: { crew.characteristics.comprehend },
-                        set: { crew.characteristics.comprehend = $0 }
-                    ),
+                    value: $comprehend,
+                    isFocused: $isComprehendFocused,
                     range: 0...SaveFileConstants.MaxValues.stat,
-                    onChange: onChanged
+                    onCommit: {
+                        crew.characteristics.comprehend = comprehend
+                    },
+                    originalValue: originalCharacteristics?.comprehend
                 )
 
                 ValidatedNumberField(
                     label: "Charisma",
-                    value: Binding(
-                        get: { crew.characteristics.charisma },
-                        set: { crew.characteristics.charisma = $0 }
-                    ),
+                    value: $charisma,
+                    isFocused: $isCharismaFocused,
                     range: 0...SaveFileConstants.MaxValues.stat,
-                    onChange: onChanged
+                    onCommit: {
+                        crew.characteristics.charisma = charisma
+                    },
+                    originalValue: originalCharacteristics?.charisma
                 )
             }
 
@@ -82,5 +102,44 @@ struct CharacteristicsEditor: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            // Initialize @State from model when view appears
+            strength = crew.characteristics.strength
+            stamina = crew.characteristics.stamina
+            dexterity = crew.characteristics.dexterity
+            comprehend = crew.characteristics.comprehend
+            charisma = crew.characteristics.charisma
+        }
+        // Detect when each field loses focus and mark as changed
+        .onChange(of: isStrengthFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.characteristics.strength = strength
+                onChanged()
+            }
+        }
+        .onChange(of: isStaminaFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.characteristics.stamina = stamina
+                onChanged()
+            }
+        }
+        .onChange(of: isDexterityFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.characteristics.dexterity = dexterity
+                onChanged()
+            }
+        }
+        .onChange(of: isComprehendFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.characteristics.comprehend = comprehend
+                onChanged()
+            }
+        }
+        .onChange(of: isCharismaFocused) { wasFocused, isNowFocused in
+            if wasFocused && !isNowFocused {
+                crew.characteristics.charisma = charisma
+                onChanged()
+            }
+        }
     }
 }

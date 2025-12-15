@@ -20,6 +20,7 @@ import SwiftUI
 struct EquipmentEditor: View {
     let crew: CrewMember
     let onChanged: () -> Void
+    var originalEquipment: Equipment? = nil
 
     // State variables to track selections (needed for SwiftUI reactivity)
     @State private var selectedArmor: UInt8
@@ -37,9 +38,10 @@ struct EquipmentEditor: View {
     @State private var selectedInventory8: UInt8
 
     // Initialize state from crew member
-    init(crew: CrewMember, onChanged: @escaping () -> Void) {
+    init(crew: CrewMember, onChanged: @escaping () -> Void, originalEquipment: Equipment? = nil) {
         self.crew = crew
         self.onChanged = onChanged
+        self.originalEquipment = originalEquipment
         _selectedArmor = State(initialValue: crew.equipment.armor)
         _selectedWeapon = State(initialValue: crew.equipment.weapon)
         _selectedOnhandWeapon1 = State(initialValue: crew.equipment.onhandWeapon1)
@@ -110,7 +112,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: armorItems(currentValue: selectedArmor),
-                            onChange: {}  // updateEquipment already calls onChanged
+                            onChange: {},  // updateEquipment already calls onChanged
+                            originalItemCode: originalEquipment?.armor
                         )
                     }
                     .padding(10)
@@ -129,7 +132,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: weaponItems(currentValue: selectedWeapon),
-                            onChange: {}  // updateEquipment already calls onChanged
+                            onChange: {},  // updateEquipment already calls onChanged
+                            originalItemCode: originalEquipment?.weapon
                         )
                     }
                     .padding(10)
@@ -148,7 +152,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: weaponItems(currentValue: selectedOnhandWeapon1),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.onhandWeapon1
                         )
 
                         ItemPicker(
@@ -161,7 +166,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: weaponItems(currentValue: selectedOnhandWeapon2),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.onhandWeapon2
                         )
 
                         ItemPicker(
@@ -174,7 +180,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: weaponItems(currentValue: selectedOnhandWeapon3),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.onhandWeapon3
                         )
                     }
                     .padding(10)
@@ -193,7 +200,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: inventoryItems(currentValue: selectedInventory1),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.inventory1
                         )
 
                         ItemPicker(
@@ -206,7 +214,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: inventoryItems(currentValue: selectedInventory2),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.inventory2
                         )
 
                         ItemPicker(
@@ -219,7 +228,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: inventoryItems(currentValue: selectedInventory3),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.inventory3
                         )
 
                         ItemPicker(
@@ -232,7 +242,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: inventoryItems(currentValue: selectedInventory4),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.inventory4
                         )
 
                         ItemPicker(
@@ -245,7 +256,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: inventoryItems(currentValue: selectedInventory5),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.inventory5
                         )
 
                         ItemPicker(
@@ -258,7 +270,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: inventoryItems(currentValue: selectedInventory6),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.inventory6
                         )
 
                         ItemPicker(
@@ -271,7 +284,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: inventoryItems(currentValue: selectedInventory7),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.inventory7
                         )
 
                         ItemPicker(
@@ -284,7 +298,8 @@ struct EquipmentEditor: View {
                                 }
                             ),
                             validItems: inventoryItems(currentValue: selectedInventory8),
-                            onChange: {}
+                            onChange: {},
+                            originalItemCode: originalEquipment?.inventory8
                         )
                     }
                     .padding(10)

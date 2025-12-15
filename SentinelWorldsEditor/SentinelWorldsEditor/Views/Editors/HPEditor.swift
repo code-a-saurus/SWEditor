@@ -19,6 +19,16 @@ import SwiftUI
 struct HPEditor: View {
     let crew: CrewMember
     let onChanged: () -> Void
+    var originalHP: Int? = nil
+    var originalRank: Int? = nil
+
+    // Use @State to enable proper SwiftUI change detection
+    @State private var hp: Int = 0
+    @State private var rank: Int = 0
+
+    // Focus state for each field to detect when editing completes
+    @FocusState private var isHPFocused: Bool
+    @FocusState private var isRankFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -28,27 +38,50 @@ struct HPEditor: View {
 
             ValidatedNumberField(
                 label: "Hit Points",
-                value: Binding(
-                    get: { crew.hp },
-                    set: { crew.hp = $0 }
-                ),
+                value: $hp,
+                isFocused: $isHPFocused,
                 range: 0...SaveFileConstants.MaxValues.hp,
-                onChange: onChanged
+                onCommit: {
+                    // Sync to model (but don't mark as changed yet)
+                    crew.hp = hp
+                },
+                originalValue: originalHP
             )
 
             ValidatedNumberField(
                 label: "Rank",
-                value: Binding(
-                    get: { crew.rank },
-                    set: { crew.rank = $0 }
-                ),
+                value: $rank,
+                isFocused: $isRankFocused,
                 range: 0...SaveFileConstants.MaxValues.rank,
-                onChange: onChanged
+                onCommit: {
+                    // Sync to model (but don't mark as changed yet)
+                    crew.rank = rank
+                },
+                originalValue: originalRank
             )
 
             Spacer()
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            // Initialize @State from model when view appears
+            hp = crew.hp
+            rank = crew.rank
+        }
+        .onChange(of: isHPFocused) { wasFocused, isNowFocused in
+            // When HP field loses focus, mark as changed
+            if wasFocused && !isNowFocused {
+                crew.hp = hp
+                onChanged()
+            }
+        }
+        .onChange(of: isRankFocused) { wasFocused, isNowFocused in
+            // When Rank field loses focus, mark as changed
+            if wasFocused && !isNowFocused {
+                crew.rank = rank
+                onChanged()
+            }
+        }
     }
 }

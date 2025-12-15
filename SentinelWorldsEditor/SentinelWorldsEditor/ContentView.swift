@@ -369,6 +369,7 @@ struct ContentView: View {
             appState.saveGame.crew = loadedGame.crew
             appState.saveGame.fileURL = loadedGame.fileURL
             appState.saveGame.hasUnsavedChanges = loadedGame.hasUnsavedChanges
+            appState.saveGame.originalValues = loadedGame.originalValues
 
             // Build navigation tree
             treeNodes = TreeNode.buildTree(from: appState.saveGame)

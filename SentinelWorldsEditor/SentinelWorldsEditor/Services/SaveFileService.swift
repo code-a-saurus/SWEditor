@@ -264,6 +264,9 @@ class SaveFileService {
         // Mark as no unsaved changes since we just loaded
         saveGame.hasUnsavedChanges = false
 
+        // Capture original values for comparison
+        saveGame.captureOriginalValues()
+
         return saveGame
     }
 
@@ -543,5 +546,8 @@ class SaveFileService {
 
         // Mark as no unsaved changes
         saveGame.hasUnsavedChanges = false
+
+        // Update original values to reflect the newly saved state
+        saveGame.captureOriginalValues()
     }
 }

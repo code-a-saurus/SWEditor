@@ -24,11 +24,19 @@ import SwiftUI
 struct ValidatedNumberField: View {
     let label: String
     @Binding var value: Int
+    var isFocused: FocusState<Bool>.Binding
     let range: ClosedRange<Int>
-    let onChange: () -> Void
+    let onCommit: () -> Void  // Renamed from onChange to clarify it's called on commit
+    var originalValue: Int? = nil  // Optional original value for comparison
 
     private var isValid: Bool {
         range.contains(value)
+    }
+
+    /// Whether the value has been modified from its original
+    private var isModified: Bool {
+        guard let original = originalValue else { return false }
+        return value != original
     }
 
     var body: some View {
@@ -40,14 +48,23 @@ struct ValidatedNumberField: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 100)
                 .border(isValid ? Color.clear : Color.red, width: 2)
-                .onChange(of: value) { _ in
-                    onChange()
+                .focused(isFocused)
+                .onSubmit {
+                    // Trigger when user presses Return
+                    onCommit()
                 }
 
             if isValid {
-                Text("(max: \(range.upperBound))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                // Show original value if modified
+                if let original = originalValue, value != original {
+                    Text("(was \(original))")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                } else {
+                    Text("(max: \(range.upperBound))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             } else {
                 Text("(\(range.lowerBound)-\(range.upperBound))")
                     .font(.caption)
@@ -58,27 +75,44 @@ struct ValidatedNumberField: View {
 }
 
 #Preview {
-    VStack(spacing: 16) {
-        ValidatedNumberField(
-            label: "HP",
-            value: .constant(100),
-            range: 0...125,
-            onChange: { print("Changed") }
-        )
+    struct PreviewWrapper: View {
+        @State private var hp: Int = 100
+        @State private var invalidHP: Int = 200
+        @State private var cash: Int = 50000
 
-        ValidatedNumberField(
-            label: "HP",
-            value: .constant(200),  // Invalid - out of range
-            range: 0...125,
-            onChange: { print("Changed") }
-        )
+        @FocusState private var isHPFocused: Bool
+        @FocusState private var isInvalidHPFocused: Bool
+        @FocusState private var isCashFocused: Bool
 
-        ValidatedNumberField(
-            label: "Cash",
-            value: .constant(50000),
-            range: 0...655359,
-            onChange: { print("Changed") }
-        )
+        var body: some View {
+            VStack(spacing: 16) {
+                ValidatedNumberField(
+                    label: "HP",
+                    value: $hp,
+                    isFocused: $isHPFocused,
+                    range: 0...125,
+                    onCommit: { print("HP committed: \(hp)") }
+                )
+
+                ValidatedNumberField(
+                    label: "HP (Invalid)",
+                    value: $invalidHP,
+                    isFocused: $isInvalidHPFocused,
+                    range: 0...125,
+                    onCommit: { print("Invalid HP committed: \(invalidHP)") }
+                )
+
+                ValidatedNumberField(
+                    label: "Cash",
+                    value: $cash,
+                    isFocused: $isCashFocused,
+                    range: 0...655359,
+                    onCommit: { print("Cash committed: \(cash)") }
+                )
+            }
+            .padding()
+        }
     }
-    .padding()
+
+    return PreviewWrapper()
 }

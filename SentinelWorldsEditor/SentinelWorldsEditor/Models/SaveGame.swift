@@ -38,10 +38,65 @@ class SaveGame: ObservableObject {
     /// URL of the currently loaded save file
     @Published var fileURL: URL?
 
+    /// Original values snapshot (captured when file is loaded)
+    var originalValues: OriginalValues?
+
     init() {
         self.party = Party()
         self.ship = Ship()
         self.crew = (1...5).map { CrewMember(crewNumber: $0) }
+    }
+
+    /// Capture current values as the original baseline
+    func captureOriginalValues() {
+        originalValues = OriginalValues(from: self)
+    }
+
+    /// Clear original values (called when starting fresh)
+    func clearOriginalValues() {
+        originalValues = nil
+    }
+}
+
+// MARK: - Original Values Snapshot
+
+/// Stores a snapshot of original values for comparison
+class OriginalValues {
+    let partyCash: Int
+    let partyLightEnergy: Int
+    let shipMove: Int
+    let shipTarget: Int
+    let shipEngine: Int
+    let shipLaser: Int
+    let crew: [OriginalCrewMember]
+
+    init(from saveGame: SaveGame) {
+        self.partyCash = saveGame.party.cash
+        self.partyLightEnergy = saveGame.party.lightEnergy
+        self.shipMove = saveGame.ship.move
+        self.shipTarget = saveGame.ship.target
+        self.shipEngine = saveGame.ship.engine
+        self.shipLaser = saveGame.ship.laser
+        self.crew = saveGame.crew.map { OriginalCrewMember(from: $0) }
+    }
+}
+
+/// Original values for a single crew member
+struct OriginalCrewMember {
+    let name: String
+    let rank: Int
+    let hp: Int
+    let characteristics: Characteristics
+    let abilities: Abilities
+    let equipment: Equipment
+
+    init(from crewMember: CrewMember) {
+        self.name = crewMember.name
+        self.rank = crewMember.rank
+        self.hp = crewMember.hp
+        self.characteristics = crewMember.characteristics
+        self.abilities = crewMember.abilities
+        self.equipment = crewMember.equipment
     }
 }
 
