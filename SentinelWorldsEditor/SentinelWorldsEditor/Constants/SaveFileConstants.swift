@@ -282,6 +282,7 @@ struct SaveFileConstants {
         static let shipSoftware = 8
         static let stat = 254  // For characteristics and abilities
         static let hp = 125
+        static let rank = 254
     }
 
     // MARK: - Save File Validation

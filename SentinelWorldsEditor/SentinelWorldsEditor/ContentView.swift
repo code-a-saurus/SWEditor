@@ -31,6 +31,10 @@ struct ContentView: View {
     @State private var showingSaveSuccess = false
     @State private var saveSuccessMessage = ""
 
+    // Tree navigation state
+    @State private var treeNodes: [TreeNode] = []
+    @State private var selectedNode: TreeNode.NodeType?
+
     // Mark file as having unsaved changes
     private func markChanged() {
         saveGame.hasUnsavedChanges = true
@@ -59,7 +63,24 @@ struct ContentView: View {
             if saveGame.fileURL == nil {
                 welcomeView
             } else {
-                dataDisplayView
+                // Navigation split view with tree sidebar
+                NavigationSplitView {
+                    // Left sidebar - Tree navigation
+                    List(selection: $selectedNode) {
+                        ForEach(treeNodes) { node in
+                            treeNodeView(node: node)
+                        }
+                    }
+                    .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 300)
+                    .listStyle(.sidebar)
+                } detail: {
+                    // Right detail - Editor area
+                    EditorContainer(
+                        saveGame: saveGame,
+                        selectedNode: selectedNode,
+                        onChanged: markChanged
+                    )
+                }
             }
 
             // Status bar at bottom
@@ -106,6 +127,49 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Tree Navigation
+
+    /// Recursively renders tree nodes with children
+    private func treeNodeView(node: TreeNode) -> AnyView {
+        if let children = node.children {
+            return AnyView(
+                DisclosureGroup {
+                    ForEach(children) { child in
+                        treeNodeView(node: child)
+                    }
+                } label: {
+                    Label(node.title, systemImage: iconForNodeType(node.type))
+                        .tag(node.type)
+                }
+            )
+        } else {
+            return AnyView(
+                Label(node.title, systemImage: iconForNodeType(node.type))
+                    .tag(node.type)
+            )
+        }
+    }
+
+    /// Returns appropriate SF Symbol icon for each node type
+    private func iconForNodeType(_ type: TreeNode.NodeType) -> String {
+        switch type {
+        case .party, .partyCash, .partyLight:
+            return "person.3"
+        case .ship, .shipSoftware:
+            return "airplane"
+        case .crewRoot, .crewMember:
+            return "person.fill"
+        case .crewCharacteristics:
+            return "chart.bar"
+        case .crewAbilities:
+            return "star"
+        case .crewHP:
+            return "heart.fill"
+        case .crewEquipment:
+            return "backpack"
+        }
+    }
+
     // MARK: - Welcome View
 
     private var welcomeView: some View {
@@ -141,292 +205,6 @@ struct ContentView: View {
         .background(Color(nsColor: .textBackgroundColor))
     }
 
-    // MARK: - Data Display View
-
-    private var dataDisplayView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Party section
-                GroupBox(label: Label("Party", systemImage: "person.3")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ValidatedNumberField(
-                            label: "Cash",
-                            value: $saveGame.party.cash,
-                            range: 0...SaveFileConstants.MaxValues.cash,
-                            onChange: markChanged
-                        )
-
-                        ValidatedNumberField(
-                            label: "Light Energy",
-                            value: $saveGame.party.lightEnergy,
-                            range: 0...SaveFileConstants.MaxValues.lightEnergy,
-                            onChange: markChanged
-                        )
-                    }
-                    .padding(8)
-                }
-
-                // Ship section
-                GroupBox(label: Label("Ship Software", systemImage: "airplane")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ValidatedNumberField(
-                            label: "Move",
-                            value: $saveGame.ship.move,
-                            range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                            onChange: markChanged
-                        )
-
-                        ValidatedNumberField(
-                            label: "Target",
-                            value: $saveGame.ship.target,
-                            range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                            onChange: markChanged
-                        )
-
-                        ValidatedNumberField(
-                            label: "Engine",
-                            value: $saveGame.ship.engine,
-                            range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                            onChange: markChanged
-                        )
-
-                        ValidatedNumberField(
-                            label: "Laser",
-                            value: $saveGame.ship.laser,
-                            range: 0...SaveFileConstants.MaxValues.shipSoftware,
-                            onChange: markChanged
-                        )
-                    }
-                    .padding(8)
-                }
-
-                // Crew members section
-                ForEach(saveGame.crew) { crew in
-                    GroupBox(label: Label("Crew \(crew.id): \(crew.name.isEmpty ? "(Unnamed)" : crew.name)", systemImage: "person.fill")) {
-                        VStack(alignment: .leading, spacing: 12) {
-                            // Basic stats
-                            HStack(spacing: 20) {
-                                ValidatedNumberField(
-                                    label: "HP",
-                                    value: $saveGame.crew[crew.id - 1].hp,
-                                    range: 0...SaveFileConstants.MaxValues.hp,
-                                    onChange: markChanged
-                                )
-                                ValidatedNumberField(
-                                    label: "Rank",
-                                    value: $saveGame.crew[crew.id - 1].rank,
-                                    range: 0...254,
-                                    onChange: markChanged
-                                )
-                            }
-
-                            Divider()
-
-                            // Characteristics
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Characteristics")
-                                    .font(.headline)
-                                    .padding(.bottom, 4)
-
-                                VStack(alignment: .leading, spacing: 8) {
-                                    ValidatedNumberField(
-                                        label: "Strength",
-                                        value: $saveGame.crew[crew.id - 1].characteristics.strength,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Stamina",
-                                        value: $saveGame.crew[crew.id - 1].characteristics.stamina,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Dexterity",
-                                        value: $saveGame.crew[crew.id - 1].characteristics.dexterity,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Comprehend",
-                                        value: $saveGame.crew[crew.id - 1].characteristics.comprehend,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Charisma",
-                                        value: $saveGame.crew[crew.id - 1].characteristics.charisma,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                }
-                            }
-
-                            Divider()
-
-                            // Abilities
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Abilities")
-                                    .font(.headline)
-                                    .padding(.bottom, 4)
-
-                                VStack(alignment: .leading, spacing: 8) {
-                                    ValidatedNumberField(
-                                        label: "Contact",
-                                        value: $saveGame.crew[crew.id - 1].abilities.contact,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Edged",
-                                        value: $saveGame.crew[crew.id - 1].abilities.edged,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Projectile",
-                                        value: $saveGame.crew[crew.id - 1].abilities.projectile,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Blaster",
-                                        value: $saveGame.crew[crew.id - 1].abilities.blaster,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Tactics",
-                                        value: $saveGame.crew[crew.id - 1].abilities.tactics,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Recon",
-                                        value: $saveGame.crew[crew.id - 1].abilities.recon,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Gunnery",
-                                        value: $saveGame.crew[crew.id - 1].abilities.gunnery,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "ATV Repair",
-                                        value: $saveGame.crew[crew.id - 1].abilities.atvRepair,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Mining",
-                                        value: $saveGame.crew[crew.id - 1].abilities.mining,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Athletics",
-                                        value: $saveGame.crew[crew.id - 1].abilities.athletics,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Observation",
-                                        value: $saveGame.crew[crew.id - 1].abilities.observation,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                    ValidatedNumberField(
-                                        label: "Bribery",
-                                        value: $saveGame.crew[crew.id - 1].abilities.bribery,
-                                        range: 0...SaveFileConstants.MaxValues.stat,
-                                        onChange: markChanged
-                                    )
-                                }
-                            }
-
-                            Divider()
-
-                            // Equipment
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Equipment")
-                                    .font(.headline)
-                                    .padding(.bottom, 4)
-
-                                HStack {
-                                    Text("Armor:")
-                                        .frame(width: 100, alignment: .leading)
-                                    Text(ItemConstants.itemName(for: crew.equipment.armor))
-                                        .fontWeight(.semibold)
-                                }
-                                HStack {
-                                    Text("Weapon:")
-                                        .frame(width: 100, alignment: .leading)
-                                    Text(ItemConstants.itemName(for: crew.equipment.weapon))
-                                        .fontWeight(.semibold)
-                                }
-
-                                Text("On-hand Weapons:")
-                                    .padding(.top, 4)
-                                HStack {
-                                    Text("1:")
-                                        .frame(width: 20)
-                                    Text(ItemConstants.itemName(for: crew.equipment.onhandWeapon1))
-                                }
-                                HStack {
-                                    Text("2:")
-                                        .frame(width: 20)
-                                    Text(ItemConstants.itemName(for: crew.equipment.onhandWeapon2))
-                                }
-                                HStack {
-                                    Text("3:")
-                                        .frame(width: 20)
-                                    Text(ItemConstants.itemName(for: crew.equipment.onhandWeapon3))
-                                }
-
-                                Text("Inventory:")
-                                    .padding(.top, 4)
-                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 4) {
-                                    inventoryRow("1:", crew.equipment.inventory1)
-                                    inventoryRow("2:", crew.equipment.inventory2)
-                                    inventoryRow("3:", crew.equipment.inventory3)
-                                    inventoryRow("4:", crew.equipment.inventory4)
-                                    inventoryRow("5:", crew.equipment.inventory5)
-                                    inventoryRow("6:", crew.equipment.inventory6)
-                                    inventoryRow("7:", crew.equipment.inventory7)
-                                    inventoryRow("8:", crew.equipment.inventory8)
-                                }
-                            }
-                        }
-                        .padding(8)
-                    }
-                }
-            }
-            .padding()
-        }
-        .background(Color(nsColor: .textBackgroundColor))
-    }
-
-    // MARK: - Helper Views
-
-    private func statRow(_ label: String, _ value: Int) -> some View {
-        HStack {
-            Text(label)
-                .frame(width: 90, alignment: .leading)
-            Text("\(value)")
-                .fontWeight(.medium)
-        }
-    }
-
-    private func inventoryRow(_ label: String, _ itemCode: UInt8) -> some View {
-        HStack {
-            Text(label)
-                .frame(width: 20)
-            Text(ItemConstants.itemName(for: itemCode))
-                .font(.system(size: 12))
-        }
-    }
 
     // MARK: - File Handling
 
@@ -467,6 +245,12 @@ struct ContentView: View {
             saveGame.crew = loadedGame.crew
             saveGame.fileURL = loadedGame.fileURL
             saveGame.hasUnsavedChanges = loadedGame.hasUnsavedChanges
+
+            // Build navigation tree
+            treeNodes = TreeNode.buildTree(from: saveGame)
+
+            // Select first editable node by default (Party Cash)
+            selectedNode = .partyCash
 
             statusMessage = url.lastPathComponent
         } catch let error as SaveFileValidator.ValidationError {

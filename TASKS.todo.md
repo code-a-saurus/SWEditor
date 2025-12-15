@@ -250,3 +250,91 @@ Phase 4 will add editing capabilities and save functionality
 - Sandboxing fixed by adding `com.apple.security.files.user-selected.read-write` entitlement in Xcode
 - Backup file logic removed entirely - simpler architecture, fewer permission issues
 - Phase 4 goals fully achieved
+
+---
+
+## Swift Native Port - Phase 5 Complete ✅ (2025-12-14)
+
+### Accomplished
+✅ Created master-detail navigation interface with tree sidebar
+✅ Built hierarchical navigation tree showing:
+  - Party (Cash, Light Energy)
+  - Ship Software (All Software)
+  - Crew Members (×5 with Characteristics, Abilities, Hit Points, Equipment)
+✅ Implemented all editor components:
+  - PartyCashEditor.swift
+  - PartyLightEditor.swift
+  - ShipSoftwareEditor.swift
+  - CharacteristicsEditor.swift (5 stats per crew)
+  - AbilitiesEditor.swift (12 abilities per crew)
+  - HPEditor.swift (HP and Rank)
+✅ Created routing infrastructure with EditorContainer.swift
+✅ Equipment editor placeholder (Phase 6 pending)
+✅ All 37 unit tests passing
+
+### Technical Implementation
+
+**Files Created:**
+- Views/Sidebar/TreeNode.swift - Hierarchical tree data model
+  - Identifiable & Hashable structs
+  - NodeType enum for all editor types
+  - buildTree() static method for tree construction
+- Views/Editors/EditorContainer.swift - Routing logic
+  - Routes NodeType to appropriate editor
+  - Placeholder views for parent nodes
+- Views/Editors/PartyCashEditor.swift - Party cash editing
+- Views/Editors/PartyLightEditor.swift - Light energy editing
+- Views/Editors/ShipSoftwareEditor.swift - Ship software editing
+- Views/Editors/CharacteristicsEditor.swift - Crew characteristics
+- Views/Editors/AbilitiesEditor.swift - Crew abilities (scrollable)
+- Views/Editors/HPEditor.swift - Crew HP and rank
+
+**Files Modified:**
+- ContentView.swift - Major refactor to NavigationSplitView
+  - Replaced single-view layout with master-detail pattern
+  - Added tree navigation sidebar (200-300px wide)
+  - Added treeNodeView() recursive function with AnyView
+  - Added iconForNodeType() for SF Symbol icons
+  - Tree automatically built when file loads
+  - Removed old dataDisplayView (replaced by editors)
+- SaveFileConstants.swift - Added maxRank to MaxValues
+
+### Key Features Working
+- Collapsible tree navigation with DisclosureGroup ✅
+- Master-detail split view with resizable sidebar ✅
+- Icon indicators for each node type (SF Symbols) ✅
+- Clicking tree items shows appropriate editor ✅
+- All editors functional with validation ✅
+- Custom Binding wrappers for non-ObservableObject classes ✅
+- Tree automatically selects "Party Cash" on file load ✅
+
+### Technical Challenges Resolved
+
+**Issue 1: ObservableObject Mismatch**
+- Party, Ship, and CrewMember are regular classes (not ObservableObject)
+- Solution: Used custom Binding wrappers in all editors:
+  ```swift
+  Binding(
+      get: { party.cash },
+      set: { party.cash = $0 }
+  )
+  ```
+
+**Issue 2: Recursive View Type Inference**
+- treeNodeView() is recursive, Swift can't infer `some View`
+- Solution: Changed return type from `some View` to `AnyView`
+- Wrapped all returns in `AnyView()`
+
+**Issue 3: Constant Name Mismatches**
+- Used `SaveFileConstants.maxCash` instead of `SaveFileConstants.MaxValues.cash`
+- Solution: Updated all editor files to use correct nested struct path
+
+### Architecture Notes
+- Navigation tree uses hierarchical TreeNode structs
+- Each TreeNode has optional children (parent nodes)
+- Leaf nodes (no children) show editors
+- Parent nodes show placeholder message
+- Equipment editor pending Phase 6 (dropdown implementation)
+
+### Next Phase
+Phase 6 will implement equipment editor with dropdown menus for 65 items
