@@ -36,7 +36,7 @@ class SaveGame: ObservableObject {
     @Published var hasUnsavedChanges: Bool = false
 
     /// URL of the currently loaded save file
-    var fileURL: URL?
+    @Published var fileURL: URL?
 
     init() {
         self.party = Party()

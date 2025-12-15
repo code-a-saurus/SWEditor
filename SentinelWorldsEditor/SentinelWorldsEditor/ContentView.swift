@@ -33,6 +33,10 @@ struct ContentView: View {
     @State private var showingUnsavedChangesAlert = false
     @State private var pendingFileURL: URL? // Store URL to load after handling unsaved changes
 
+    // Window management
+    @State private var window: NSWindow?
+    private let windowDelegate = WindowDelegate()
+
     // Tree navigation state
     @State private var treeNodes: [TreeNode] = []
     @State private var selectedNode: TreeNode.NodeType?
@@ -166,6 +170,22 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .openRequested)) { _ in
             initiateOpenFile()
+        }
+        .accessWindow(window: $window)
+        .onAppear {
+            // Set up window delegate
+            windowDelegate.appState = appState
+        }
+        .onChange(of: window) { newWindow in
+            // Configure window when it becomes available
+            if let window = newWindow {
+                window.delegate = windowDelegate
+                window.isDocumentEdited = saveGame.hasUnsavedChanges
+            }
+        }
+        .onChange(of: saveGame.hasUnsavedChanges) { hasChanges in
+            // Update the window's edited state (shows dot in close button)
+            window?.isDocumentEdited = hasChanges
         }
     }
 

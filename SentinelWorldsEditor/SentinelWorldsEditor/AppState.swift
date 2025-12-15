@@ -29,9 +29,24 @@ class AppState: ObservableObject {
     /// Flag to bypass the unsaved changes check (used when user chooses "Don't Save")
     var shouldTerminateWithoutSaving = false
 
-    /// Computed property to determine if Save menu item should be enabled
-    /// This property is observed by menu commands to enable/disable the Save button
-    var canSave: Bool {
-        saveGame.fileURL != nil && saveGame.hasUnsavedChanges
+    /// Published property to determine if Save menu item should be enabled
+    /// This is updated whenever saveGame changes to trigger menu updates
+    @Published var canSave: Bool = false
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        // Forward saveGame's objectWillChange to our own objectWillChange
+        // This ensures menu commands update when saveGame properties change
+        saveGame.objectWillChange.sink { [weak self] _ in
+            self?.updateCanSave()
+            self?.objectWillChange.send()
+        }
+        .store(in: &cancellables)
+    }
+
+    /// Updates the canSave property based on current saveGame state
+    private func updateCanSave() {
+        canSave = saveGame.fileURL != nil && saveGame.hasUnsavedChanges
     }
 }
