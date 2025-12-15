@@ -23,7 +23,7 @@ import UniformTypeIdentifiers
 import AppKit
 
 struct ContentView: View {
-    @StateObject private var saveGame = SaveGame()
+    @EnvironmentObject var appState: AppState
     @State private var statusMessage = "No file loaded"
     @State private var showingFilePicker = false
     @State private var showingError = false
@@ -35,18 +35,37 @@ struct ContentView: View {
     @State private var treeNodes: [TreeNode] = []
     @State private var selectedNode: TreeNode.NodeType?
 
+    // Computed property for convenience
+    private var saveGame: SaveGame {
+        appState.saveGame
+    }
+
     // Mark file as having unsaved changes
     private func markChanged() {
-        saveGame.hasUnsavedChanges = true
+        appState.saveGame.hasUnsavedChanges = true
+    }
+
+    // Computed property for window title
+    private var windowTitle: String {
+        if let fileURL = saveGame.fileURL {
+            let filename = fileURL.lastPathComponent
+            if saveGame.hasUnsavedChanges {
+                return "● \(filename) - Sentinel Worlds Editor"
+            } else {
+                return "\(filename) - Sentinel Worlds Editor"
+            }
+        } else {
+            return "Sentinel Worlds Editor"
+        }
     }
 
     // Save the current file
     private func handleSave() {
-        guard let fileURL = saveGame.fileURL else { return }
+        guard let fileURL = appState.saveGame.fileURL else { return }
 
         // NSOpenPanel provides read-write access automatically, no need for security-scoped resource
         do {
-            try SaveFileService.save(saveGame, to: fileURL)
+            try SaveFileService.save(appState.saveGame, to: fileURL)
             statusMessage = "\(fileURL.lastPathComponent) - Saved"
             saveSuccessMessage = "File saved successfully."
             showingSaveSuccess = true
@@ -81,6 +100,7 @@ struct ContentView: View {
                         onChanged: markChanged
                     )
                 }
+                .navigationTitle(windowTitle)
             }
 
             // Status bar at bottom
@@ -124,6 +144,12 @@ struct ContentView: View {
             Button("OK") { }
         } message: {
             Text(saveSuccessMessage)
+        }
+        .sheet(isPresented: $appState.showGPLLicense) {
+            GPLLicenseView()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .saveRequested)) { _ in
+            handleSave()
         }
     }
 
@@ -239,15 +265,15 @@ struct ContentView: View {
         do {
             let loadedGame = try SaveFileService.load(from: url)
 
-            // Copy loaded data to our @StateObject
-            saveGame.party = loadedGame.party
-            saveGame.ship = loadedGame.ship
-            saveGame.crew = loadedGame.crew
-            saveGame.fileURL = loadedGame.fileURL
-            saveGame.hasUnsavedChanges = loadedGame.hasUnsavedChanges
+            // Copy loaded data to our shared app state
+            appState.saveGame.party = loadedGame.party
+            appState.saveGame.ship = loadedGame.ship
+            appState.saveGame.crew = loadedGame.crew
+            appState.saveGame.fileURL = loadedGame.fileURL
+            appState.saveGame.hasUnsavedChanges = loadedGame.hasUnsavedChanges
 
             // Build navigation tree
-            treeNodes = TreeNode.buildTree(from: saveGame)
+            treeNodes = TreeNode.buildTree(from: appState.saveGame)
 
             // Select first editable node by default (Party Cash)
             selectedNode = .partyCash
@@ -269,4 +295,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(AppState())
 }
