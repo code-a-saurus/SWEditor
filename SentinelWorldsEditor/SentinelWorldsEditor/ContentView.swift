@@ -187,6 +187,7 @@ struct ContentView: View {
             // Update the window's edited state (shows dot in close button)
             window?.isDocumentEdited = hasChanges
         }
+        .focusedSceneValue(\.canSave, saveGame.fileURL != nil && saveGame.hasUnsavedChanges)
     }
 
     // MARK: - Tree Navigation

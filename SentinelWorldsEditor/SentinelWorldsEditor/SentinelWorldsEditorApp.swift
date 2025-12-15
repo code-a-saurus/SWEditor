@@ -45,11 +45,7 @@ struct SentinelWorldsEditorApp: App {
                 }
                 .keyboardShortcut("o", modifiers: .command)
 
-                Button("Save") {
-                    NotificationCenter.default.post(name: .saveRequested, object: nil)
-                }
-                .keyboardShortcut("s", modifiers: .command)
-                .disabled(!appState.canSave)
+                SaveCommand()
             }
 
             // Help menu with GPL license
@@ -70,4 +66,17 @@ struct SentinelWorldsEditorApp: App {
 extension Notification.Name {
     static let saveRequested = Notification.Name("saveRequested")
     static let openRequested = Notification.Name("openRequested")
+}
+
+// Save command that uses focused values for proper reactivity
+struct SaveCommand: View {
+    @FocusedValue(\.canSave) private var canSave: Bool?
+
+    var body: some View {
+        Button("Save") {
+            NotificationCenter.default.post(name: .saveRequested, object: nil)
+        }
+        .keyboardShortcut("s", modifiers: .command)
+        .disabled(!(canSave ?? false))
+    }
 }

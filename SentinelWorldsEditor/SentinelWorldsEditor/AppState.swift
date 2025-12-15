@@ -38,15 +38,20 @@ class AppState: ObservableObject {
     init() {
         // Forward saveGame's objectWillChange to our own objectWillChange
         // This ensures menu commands update when saveGame properties change
-        saveGame.objectWillChange.sink { [weak self] _ in
-            self?.updateCanSave()
-            self?.objectWillChange.send()
-        }
-        .store(in: &cancellables)
+        saveGame.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateCanSave()
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates the canSave property based on current saveGame state
+    /// This is @Published so it will automatically trigger objectWillChange
     private func updateCanSave() {
-        canSave = saveGame.fileURL != nil && saveGame.hasUnsavedChanges
+        let newValue = saveGame.fileURL != nil && saveGame.hasUnsavedChanges
+        if canSave != newValue {
+            canSave = newValue
+        }
     }
 }
