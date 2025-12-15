@@ -337,4 +337,84 @@ Phase 4 will add editing capabilities and save functionality
 - Equipment editor pending Phase 6 (dropdown implementation)
 
 ### Next Phase
-Phase 6 will implement equipment editor with dropdown menus for 65 items
+Phase 7 will add macOS polish and final integration
+
+---
+
+## Swift Native Port - Phase 6 Complete ✅ (2025-12-14)
+
+### Accomplished
+✅ Created ItemPicker.swift - reusable dropdown component for equipment selection
+✅ Created EquipmentEditor.swift - complete equipment editor with 13 dropdown menus
+✅ Implemented equipment editing for all 5 crew members:
+  - 1× Equipped Armor (filtered to 15 valid armor items)
+  - 1× Equipped Weapon (filtered to 25 valid weapon items)
+  - 3× On-hand Weapons (filtered to 25 valid weapon items)
+  - 8× Inventory slots (filtered to all valid inventory items)
+✅ Integrated EquipmentEditor into EditorContainer routing
+✅ Fixed deprecation warning (updated onChange syntax to modern pattern)
+✅ All 37 unit tests passing
+✅ Full build successful with zero warnings
+
+### Technical Implementation
+
+**Files Created:**
+- Views/Components/ItemPicker.swift - Reusable dropdown component
+  - Takes label, binding to UInt8, valid items array, onChange callback
+  - Displays Picker with human-readable item names from ItemConstants
+  - Modern onChange syntax (zero-parameter closure)
+  - Fixed width (200px) for consistent layout
+
+- Views/Editors/EquipmentEditor.swift - Equipment editor with all slots
+  - ScrollView container for long content
+  - Four GroupBox sections: Equipped Armor, Equipped Weapon, On-hand Weapons, Inventory
+  - 13 total ItemPicker instances (1 + 1 + 3 + 8)
+  - Alphabetically sorted dropdown lists for better UX
+  - Custom Binding wrappers for Equipment properties (workaround for individual properties)
+  - Crew member name in header
+
+**Files Modified:**
+- Views/Editors/EditorContainer.swift - Added equipment routing
+  - Replaced placeholder with EquipmentEditor instantiation
+  - Routes .crewEquipment(crewNumber) to appropriate crew member
+
+### Key Features Working
+- Equipment dropdowns show only valid items for each slot type ✅
+- Human-readable item names ("Neutron Gun" instead of 0x1B) ✅
+- Alphabetical sorting in all dropdowns ✅
+- Change tracking triggers unsaved indicator ✅
+- All 13 pickers functional across all 5 crew members ✅
+- Proper filtering (armor vs weapons vs all inventory) ✅
+- Scrollable interface handles long content ✅
+
+### Equipment Data Structure Notes
+- Equipment uses individual properties (onhandWeapon1-3, inventory1-8) due to Phase 2 malloc workaround
+- Custom Binding wrappers used for each property:
+  ```swift
+  Binding(
+      get: { crew.equipment.onhandWeapon1 },
+      set: { crew.equipment.onhandWeapon1 = $0 }
+  )
+  ```
+- This pattern works perfectly with the individual property structure
+
+### Testing Results
+- All 37 unit tests passing ✅
+- Build succeeds with zero warnings ✅
+- Equipment editor displays correctly in all crew member slots ✅
+- Dropdown menus populate with correct filtered items ✅
+
+### Architecture Patterns
+- Reusable component design (ItemPicker used 13× across editor)
+- Consistent with other editors (same onChanged callback pattern)
+- GroupBox organization for visual hierarchy
+- ScrollView for long content areas
+
+### Next Phase
+Phase 7 will add macOS polish:
+- Window title with filename and edited state
+- Unsaved changes warning on close/quit
+- Keyboard shortcuts (Cmd+O, Cmd+S already working)
+- Custom menu bar with GPL license access
+- App icon
+- Remember window size/position

@@ -56,8 +56,10 @@ struct EditorContainer: View {
                     )
 
                 case .crewEquipment(let crewNumber):
-                    placeholderView(title: "Equipment Editor",
-                                  message: "Equipment editing will be added in Phase 6")
+                    EquipmentEditor(
+                        crew: saveGame.crew[crewNumber - 1],
+                        onChanged: onChanged
+                    )
 
                 // Parent nodes (no direct editor)
                 case .party, .ship, .crewRoot, .crewMember:
