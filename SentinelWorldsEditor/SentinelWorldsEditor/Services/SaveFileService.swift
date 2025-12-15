@@ -271,24 +271,33 @@ class SaveFileService {
 
     /// Saves a save game to a file
     ///
-    /// Creates a .bak backup before writing changes.
+    /// Attempts to create a .bak backup before writing changes (may fail due to sandboxing).
     ///
     /// - Parameters:
     ///   - saveGame: The SaveGame object to save
     ///   - url: URL to save to
+    /// - Returns: True if backup was created successfully, false otherwise
     /// - Throws: File I/O errors or validation errors
-    static func save(_ saveGame: SaveGame, to url: URL) throws {
+    @discardableResult
+    static func save(_ saveGame: SaveGame, to url: URL) throws -> Bool {
         let fileManager = FileManager.default
 
-        // Validate file is writable (directory must be writable for backup)
-        try SaveFileValidator.validate(url: url, requireWritable: true)
+        // Validate file exists and is a valid save file
+        try SaveFileValidator.validate(url: url, requireWritable: false)
 
-        // Create .bak backup file
+        // Try to create .bak backup file (optional - may fail due to sandboxing)
         let backupURL = url.deletingPathExtension().appendingPathExtension("bak")
-        if fileManager.fileExists(atPath: backupURL.path) {
-            try fileManager.removeItem(at: backupURL)
+        var backupCreated = false
+        do {
+            if fileManager.fileExists(atPath: backupURL.path) {
+                try fileManager.removeItem(at: backupURL)
+            }
+            try fileManager.copyItem(at: url, to: backupURL)
+            backupCreated = true
+        } catch {
+            // Backup creation failed (likely sandboxing), but continue with save
+            print("Warning: Could not create backup file: \(error.localizedDescription)")
         }
-        try fileManager.copyItem(at: url, to: backupURL)
 
         // Open file for writing
         let fileHandle = try FileHandle(forWritingTo: url)
@@ -554,5 +563,7 @@ class SaveFileService {
 
         // Mark as no unsaved changes
         saveGame.hasUnsavedChanges = false
+
+        return backupCreated
     }
 }

@@ -28,6 +28,7 @@ struct ContentView: View {
     @State private var showingError = false
     @State private var errorMessage = ""
     @State private var showingSaveSuccess = false
+    @State private var saveSuccessMessage = ""
 
     // Mark file as having unsaved changes
     private func markChanged() {
@@ -49,8 +50,14 @@ struct ContentView: View {
         }
 
         do {
-            try SaveFileService.save(saveGame, to: fileURL)
+            let backupCreated = try SaveFileService.save(saveGame, to: fileURL)
             statusMessage = "\(fileURL.lastPathComponent) - Saved"
+
+            if backupCreated {
+                saveSuccessMessage = "File saved successfully. A backup was created with .bak extension."
+            } else {
+                saveSuccessMessage = "File saved successfully.\n\nNote: Could not create backup file due to directory permissions. Consider manually backing up your save files."
+            }
             showingSaveSuccess = true
         } catch let error as SaveFileValidator.ValidationError {
             showError(error.localizedDescription)
@@ -108,7 +115,7 @@ struct ContentView: View {
         .alert("Saved Successfully", isPresented: $showingSaveSuccess) {
             Button("OK") { }
         } message: {
-            Text("File saved successfully. A backup was created with .bak extension.")
+            Text(saveSuccessMessage)
         }
     }
 
