@@ -22,6 +22,7 @@ struct CharacteristicsEditor: View {
     let saveGame: SaveGame
     let onChanged: () -> Void
     var originalCharacteristics: Characteristics? = nil
+    var originalPortrait: UInt8? = nil
     var undoManager: UndoManager? = nil
 
     // Use @State to enable proper SwiftUI change detection
@@ -30,6 +31,7 @@ struct CharacteristicsEditor: View {
     @State private var dexterity: Int = 0
     @State private var comprehend: Int = 0
     @State private var charisma: Int = 0
+    @State private var portrait: UInt8 = 0x01
 
     // Focus state for each field to detect when editing completes
     @FocusState private var isStrengthFocused: Bool
@@ -39,12 +41,14 @@ struct CharacteristicsEditor: View {
     @FocusState private var isCharismaFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("\(crew.name) - Characteristics")
-                .font(.title2)
-                .fontWeight(.bold)
+        HStack(alignment: .top, spacing: 40) {
+            // Left side: Characteristics fields
+            VStack(alignment: .leading, spacing: 20) {
+                Text("\(crew.name) - Characteristics")
+                    .font(.title2)
+                    .fontWeight(.bold)
 
-            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 12) {
                 ValidatedNumberField(
                     label: "Strength",
                     value: $strength,
@@ -104,9 +108,23 @@ struct CharacteristicsEditor: View {
                     originalValue: originalCharacteristics?.charisma,
                     undoManager: undoManager
                 )
+                }
+
+                Spacer()
             }
 
-            Spacer()
+            // Right side: Portrait display and picker
+            VStack(alignment: .trailing) {
+                PortraitPicker(
+                    selectedPortrait: $portrait,
+                    onChange: { oldValue, newValue in
+                        // Portrait change will be handled in onChange modifier
+                    },
+                    originalPortrait: originalPortrait,
+                    undoManager: undoManager
+                )
+                Spacer()
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -117,6 +135,7 @@ struct CharacteristicsEditor: View {
             dexterity = crew.characteristics.dexterity
             comprehend = crew.characteristics.comprehend
             charisma = crew.characteristics.charisma
+            portrait = crew.portrait
         }
         // Detect when each field loses focus, register undo, and mark as changed
         .onChange(of: isStrengthFocused) { wasFocused, isNowFocused in
@@ -209,6 +228,24 @@ struct CharacteristicsEditor: View {
                 onChanged()
             }
         }
+        .onChange(of: portrait) { oldValue, newValue in
+            // When portrait changes, register undo and mark as changed
+            if oldValue != newValue && crew.portrait != newValue {
+                let targetCrew = crew
+                let targetSaveGame = saveGame
+                crew.portrait = newValue
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetCrew.portrait = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change \(crew.name) Portrait")
+
+                onChanged()
+            }
+        }
         .onReceive(saveGame.objectWillChange) { _ in
             // Sync @State when saveGame changes (from undo/redo)
             // Only update if this field isn't currently focused
@@ -227,6 +264,8 @@ struct CharacteristicsEditor: View {
             if !isCharismaFocused {
                 charisma = crew.characteristics.charisma
             }
+            // Portrait picker doesn't have focus, so always update
+            portrait = crew.portrait
         }
     }
 }

@@ -60,15 +60,15 @@ This is a **native macOS SwiftUI port** of the Sentinel Worlds I save game edito
   - ✅ Created PortraitConstants.swift with 8 portraits, nicknames, and helper functions
   - ✅ Added portrait property to CrewMember model and OriginalCrewMember
   - ✅ Updated SaveFileService to read/write portrait values from save files
-  - ⚠️ **NEXT STEP:** Add PortraitConstants.swift to Xcode project (File > Add Files)
+  - ✅ PortraitConstants.swift added to Xcode project
 
-- [ ] **Crew Portrait Display & Editor** - Implement portrait UI
-  - Display portrait image for selected crew member in editor area
-  - Add portrait picker dropdown (8 options: Mike, Bluehair, Burke, Roger, Allison, TJ, Casey, Glasses)
-  - Support undo/redo for portrait changes
-  - Show original portrait value indicator
-  - Portrait images: p01-p08 in Assets.xcassets "CrewPortraits" folder
-  - Consider placement: HP editor section or dedicated portrait editor
+- [x] **Crew Portrait Display & Editor (Completed 2025-12-15)**
+  - ✅ Created reusable PortraitPicker component
+  - ✅ Display portrait image (120x120) on all crew member pages
+  - ✅ Portrait picker dropdown with 8 options (Mike, Bluehair, Burke, Roger, Allison, TJ, Casey, Glasses)
+  - ✅ Full undo/redo support for portrait changes
+  - ✅ Original portrait value indicator when changed
+  - ✅ Portraits appear in upper right corner of all 4 crew editors (HP, Characteristics, Abilities, Equipment)
 
 ### Medium Priority
 

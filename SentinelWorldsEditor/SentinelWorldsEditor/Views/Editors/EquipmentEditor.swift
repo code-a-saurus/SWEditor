@@ -23,6 +23,7 @@ struct EquipmentEditor: View {
     let saveGame: SaveGame
     let onChanged: () -> Void
     var originalEquipment: Equipment? = nil
+    var originalPortrait: UInt8? = nil
     var undoManager: UndoManager? = nil
 
     @State private var selectedArmor: UInt8
@@ -38,12 +39,14 @@ struct EquipmentEditor: View {
     @State private var selectedInventory6: UInt8
     @State private var selectedInventory7: UInt8
     @State private var selectedInventory8: UInt8
+    @State private var portrait: UInt8
 
-    init(crew: CrewMember, saveGame: SaveGame, onChanged: @escaping () -> Void, originalEquipment: Equipment? = nil, undoManager: UndoManager? = nil) {
+    init(crew: CrewMember, saveGame: SaveGame, onChanged: @escaping () -> Void, originalEquipment: Equipment? = nil, originalPortrait: UInt8? = nil, undoManager: UndoManager? = nil) {
         self.crew = crew
         self.saveGame = saveGame
         self.onChanged = onChanged
         self.originalEquipment = originalEquipment
+        self.originalPortrait = originalPortrait
         self.undoManager = undoManager
         _selectedArmor = State(initialValue: crew.equipment.armor)
         _selectedWeapon = State(initialValue: crew.equipment.weapon)
@@ -58,6 +61,7 @@ struct EquipmentEditor: View {
         _selectedInventory6 = State(initialValue: crew.equipment.inventory6)
         _selectedInventory7 = State(initialValue: crew.equipment.inventory7)
         _selectedInventory8 = State(initialValue: crew.equipment.inventory8)
+        _portrait = State(initialValue: crew.portrait)
     }
 
     private func armorItems(currentValue: UInt8) -> [UInt8] {
@@ -79,9 +83,11 @@ struct EquipmentEditor: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("Equipment for \(crew.name)").font(.headline).padding(.bottom, 10)
+        HStack(alignment: .top, spacing: 40) {
+            // Left side: Equipment lists (scrollable)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("Equipment for \(crew.name)").font(.headline).padding(.bottom, 10)
 
                 GroupBox(label: Text("Equipped Armor").font(.headline)) {
                     ItemPicker(label: "Armor", selectedItemCode: $selectedArmor,
@@ -276,9 +282,43 @@ struct EquipmentEditor: View {
                         }, originalItemCode: originalEquipment?.inventory8, undoManager: undoManager)
                     }
                 }.padding(.vertical, 5)
+                }
+                .padding()
             }
-            .padding()
+
+            // Right side: Portrait display and picker
+            VStack(alignment: .trailing) {
+                PortraitPicker(
+                    selectedPortrait: $portrait,
+                    onChange: { oldValue, newValue in
+                        // When portrait changes, register undo and mark as changed
+                        if oldValue != newValue && crew.portrait != newValue {
+                            let targetCrew = crew
+                            let targetSaveGame = saveGame
+                            crew.portrait = newValue
+
+                            // Register undo action - use saveGame as target for truly global undo
+                            undoManager?.registerUndo(withTarget: saveGame) { _ in
+                                targetSaveGame.objectWillChange.send()
+                                targetCrew.portrait = oldValue
+                                onChanged()
+                            }
+                            undoManager?.setActionName("Change \(crew.name) Portrait")
+
+                            onChanged()
+                        }
+                    },
+                    originalPortrait: originalPortrait,
+                    undoManager: undoManager
+                )
+                .padding(.top)
+                Spacer()
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onReceive(saveGame.objectWillChange) { _ in
+            // Sync @State when saveGame changes (from undo/redo)
+            portrait = crew.portrait
+        }
     }
 }

@@ -22,6 +22,7 @@ struct AbilitiesEditor: View {
     let saveGame: SaveGame
     let onChanged: () -> Void
     var originalAbilities: Abilities? = nil
+    var originalPortrait: UInt8? = nil
     var undoManager: UndoManager? = nil
 
     @State private var contact: Int = 0
@@ -36,6 +37,7 @@ struct AbilitiesEditor: View {
     @State private var athletics: Int = 0
     @State private var observation: Int = 0
     @State private var bribery: Int = 0
+    @State private var portrait: UInt8 = 0x01
 
     @FocusState private var isContactFocused: Bool
     @FocusState private var isEdgedFocused: Bool
@@ -51,13 +53,15 @@ struct AbilitiesEditor: View {
     @FocusState private var isBriberyFocused: Bool
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("\(crew.name) - Abilities")
-                    .font(.title2)
-                    .fontWeight(.bold)
+        HStack(alignment: .top, spacing: 40) {
+            // Left side: Abilities fields (scrollable)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("\(crew.name) - Abilities")
+                        .font(.title2)
+                        .fontWeight(.bold)
 
-                VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 12) {
                     makeField(label: "Contact", value: $contact, focused: $isContactFocused, original: originalAbilities?.contact)
                     makeField(label: "Edged", value: $edged, focused: $isEdgedFocused, original: originalAbilities?.edged)
                     makeField(label: "Projectile", value: $projectile, focused: $isProjectileFocused, original: originalAbilities?.projectile)
@@ -70,9 +74,24 @@ struct AbilitiesEditor: View {
                     makeField(label: "Athletics", value: $athletics, focused: $isAthleticsFocused, original: originalAbilities?.athletics)
                     makeField(label: "Observation", value: $observation, focused: $isObservationFocused, original: originalAbilities?.observation)
                     makeField(label: "Bribery", value: $bribery, focused: $isBriberyFocused, original: originalAbilities?.bribery)
+                    }
                 }
+                .padding()
             }
-            .padding()
+
+            // Right side: Portrait display and picker
+            VStack(alignment: .trailing) {
+                PortraitPicker(
+                    selectedPortrait: $portrait,
+                    onChange: { oldValue, newValue in
+                        // Portrait change will be handled in onChange modifier
+                    },
+                    originalPortrait: originalPortrait,
+                    undoManager: undoManager
+                )
+                .padding(.top)
+                Spacer()
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear {
@@ -82,6 +101,7 @@ struct AbilitiesEditor: View {
             gunnery = crew.abilities.gunnery; atvRepair = crew.abilities.atvRepair
             mining = crew.abilities.mining; athletics = crew.abilities.athletics
             observation = crew.abilities.observation; bribery = crew.abilities.bribery
+            portrait = crew.portrait
         }
         .onChange(of: isContactFocused) { w, n in if w && !n && crew.abilities.contact != contact { let old = crew.abilities.contact; let targetCrew = crew; let targetSaveGame = saveGame; crew.abilities.contact = contact; undoManager?.registerUndo(withTarget: saveGame) { _ in targetSaveGame.objectWillChange.send(); targetCrew.abilities.contact = old; onChanged() }; undoManager?.setActionName("Change \(crew.name) Contact"); onChanged() } }
         .onChange(of: isEdgedFocused) { w, n in if w && !n && crew.abilities.edged != edged { let old = crew.abilities.edged; let targetCrew = crew; let targetSaveGame = saveGame; crew.abilities.edged = edged; undoManager?.registerUndo(withTarget: saveGame) { _ in targetSaveGame.objectWillChange.send(); targetCrew.abilities.edged = old; onChanged() }; undoManager?.setActionName("Change \(crew.name) Edged"); onChanged() } }
@@ -95,6 +115,24 @@ struct AbilitiesEditor: View {
         .onChange(of: isAthleticsFocused) { w, n in if w && !n && crew.abilities.athletics != athletics { let old = crew.abilities.athletics; let targetCrew = crew; let targetSaveGame = saveGame; crew.abilities.athletics = athletics; undoManager?.registerUndo(withTarget: saveGame) { _ in targetSaveGame.objectWillChange.send(); targetCrew.abilities.athletics = old; onChanged() }; undoManager?.setActionName("Change \(crew.name) Athletics"); onChanged() } }
         .onChange(of: isObservationFocused) { w, n in if w && !n && crew.abilities.observation != observation { let old = crew.abilities.observation; let targetCrew = crew; let targetSaveGame = saveGame; crew.abilities.observation = observation; undoManager?.registerUndo(withTarget: saveGame) { _ in targetSaveGame.objectWillChange.send(); targetCrew.abilities.observation = old; onChanged() }; undoManager?.setActionName("Change \(crew.name) Observation"); onChanged() } }
         .onChange(of: isBriberyFocused) { w, n in if w && !n && crew.abilities.bribery != bribery { let old = crew.abilities.bribery; let targetCrew = crew; let targetSaveGame = saveGame; crew.abilities.bribery = bribery; undoManager?.registerUndo(withTarget: saveGame) { _ in targetSaveGame.objectWillChange.send(); targetCrew.abilities.bribery = old; onChanged() }; undoManager?.setActionName("Change \(crew.name) Bribery"); onChanged() } }
+        .onChange(of: portrait) { oldValue, newValue in
+            // When portrait changes, register undo and mark as changed
+            if oldValue != newValue && crew.portrait != newValue {
+                let targetCrew = crew
+                let targetSaveGame = saveGame
+                crew.portrait = newValue
+
+                // Register undo action - use saveGame as target for truly global undo
+                undoManager?.registerUndo(withTarget: saveGame) { _ in
+                    targetSaveGame.objectWillChange.send()
+                    targetCrew.portrait = oldValue
+                    onChanged()
+                }
+                undoManager?.setActionName("Change \(crew.name) Portrait")
+
+                onChanged()
+            }
+        }
         .onReceive(saveGame.objectWillChange) { _ in
             // Sync @State when saveGame changes (from undo/redo)
             // Only update if the field isn't currently focused
@@ -110,6 +148,8 @@ struct AbilitiesEditor: View {
             if !isAthleticsFocused { athletics = crew.abilities.athletics }
             if !isObservationFocused { observation = crew.abilities.observation }
             if !isBriberyFocused { bribery = crew.abilities.bribery }
+            // Portrait picker doesn't have focus, so always update
+            portrait = crew.portrait
         }
     }
 

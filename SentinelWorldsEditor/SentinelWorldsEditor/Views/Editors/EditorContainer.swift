@@ -65,6 +65,7 @@ struct EditorContainer: View {
                         saveGame: saveGame,
                         onChanged: onChanged,
                         originalCharacteristics: saveGame.originalValues?.crew[crewNumber - 1].characteristics,
+                        originalPortrait: saveGame.originalValues?.crew[crewNumber - 1].portrait,
                         undoManager: undoManager
                     )
 
@@ -74,6 +75,7 @@ struct EditorContainer: View {
                         saveGame: saveGame,
                         onChanged: onChanged,
                         originalAbilities: saveGame.originalValues?.crew[crewNumber - 1].abilities,
+                        originalPortrait: saveGame.originalValues?.crew[crewNumber - 1].portrait,
                         undoManager: undoManager
                     )
 
@@ -84,6 +86,7 @@ struct EditorContainer: View {
                         onChanged: onChanged,
                         originalHP: saveGame.originalValues?.crew[crewNumber - 1].hp,
                         originalRank: saveGame.originalValues?.crew[crewNumber - 1].rank,
+                        originalPortrait: saveGame.originalValues?.crew[crewNumber - 1].portrait,
                         undoManager: undoManager
                     )
                     .id("hp-\(crewNumber)")
@@ -94,6 +97,7 @@ struct EditorContainer: View {
                         saveGame: saveGame,
                         onChanged: onChanged,
                         originalEquipment: saveGame.originalValues?.crew[crewNumber - 1].equipment,
+                        originalPortrait: saveGame.originalValues?.crew[crewNumber - 1].portrait,
                         undoManager: undoManager
                     )
 
