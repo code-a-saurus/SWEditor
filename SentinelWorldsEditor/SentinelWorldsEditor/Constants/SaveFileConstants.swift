@@ -51,6 +51,7 @@ struct SaveFileConstants {
         let crewNumber: Int
         let rankAddress: Int
         let hpAddress: Int
+        let portraitAddress: Int
         let armorAddress: Int
         let weaponAddress: Int
         let onhandWeaponsStart: Int
@@ -99,6 +100,7 @@ struct SaveFileConstants {
                 crewNumber: 1,
                 rankAddress: 0x023B,
                 hpAddress: 0x0236,
+                portraitAddress: 0x0240,
                 armorAddress: 0x0262,
                 weaponAddress: 0x0263,
                 onhandWeaponsStart: 0x0265,
@@ -133,6 +135,7 @@ struct SaveFileConstants {
                 crewNumber: 2,
                 rankAddress: 0x02FB,
                 hpAddress: 0x02F6,
+                portraitAddress: 0x0300,
                 armorAddress: 0x0322,
                 weaponAddress: 0x0323,
                 onhandWeaponsStart: 0x0325,
@@ -167,6 +170,7 @@ struct SaveFileConstants {
                 crewNumber: 3,
                 rankAddress: 0x03BB,
                 hpAddress: 0x03B5,
+                portraitAddress: 0x03C0,
                 armorAddress: 0x03E2,
                 weaponAddress: 0x03E3,
                 onhandWeaponsStart: 0x03E5,
@@ -201,6 +205,7 @@ struct SaveFileConstants {
                 crewNumber: 4,
                 rankAddress: 0x047B,
                 hpAddress: 0x0475,
+                portraitAddress: 0x0480,
                 armorAddress: 0x04A2,
                 weaponAddress: 0x04A3,
                 onhandWeaponsStart: 0x04A5,
@@ -235,6 +240,7 @@ struct SaveFileConstants {
                 crewNumber: 5,
                 rankAddress: 0x053B,
                 hpAddress: 0x0536,
+                portraitAddress: 0x0540,
                 armorAddress: 0x0562,
                 weaponAddress: 0x0563,
                 onhandWeaponsStart: 0x0565,

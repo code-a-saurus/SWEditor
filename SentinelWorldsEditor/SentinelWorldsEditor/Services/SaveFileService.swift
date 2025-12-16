@@ -99,6 +99,11 @@ class SaveFileService {
                 address: addrs.hpAddress,
                 numBytes: 1
             )
+            crew.portrait = UInt8(try BinaryFileIO.readBytes(
+                from: fileHandle,
+                address: addrs.portraitAddress,
+                numBytes: 1
+            ))
 
             // Characteristics
             crew.characteristics.strength = try BinaryFileIO.readBytes(
@@ -350,6 +355,12 @@ class SaveFileService {
                 to: fileHandle,
                 address: addrs.hpAddress,
                 value: crew.hp,
+                numBytes: 1
+            )
+            try BinaryFileIO.writeBytes(
+                to: fileHandle,
+                address: addrs.portraitAddress,
+                value: Int(crew.portrait),
                 numBytes: 1
             )
 

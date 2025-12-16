@@ -86,6 +86,7 @@ struct OriginalCrewMember {
     let name: String
     let rank: Int
     let hp: Int
+    let portrait: UInt8
     let characteristics: Characteristics
     let abilities: Abilities
     let equipment: Equipment
@@ -94,6 +95,7 @@ struct OriginalCrewMember {
         self.name = crewMember.name
         self.rank = crewMember.rank
         self.hp = crewMember.hp
+        self.portrait = crewMember.portrait
         self.characteristics = crewMember.characteristics
         self.abilities = crewMember.abilities
         self.equipment = crewMember.equipment
@@ -139,6 +141,7 @@ class CrewMember: Identifiable {
     var name: String = ""
     var rank: Int = 0
     var hp: Int = 0
+    var portrait: UInt8 = 0x01  // Portrait code (0x01-0x08), defaults to "Mike"
     var characteristics = Characteristics()
     var abilities = Abilities()
     var equipment = Equipment()
