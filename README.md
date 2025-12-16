@@ -1,15 +1,59 @@
 ## Sentinel Worlds I: Future Magic save game editor
-Version: 0.7b (Beta)
+Version: 0.7 (Beta)
 
 Author: Kinda Lee Hutchinson but really Claude.ai Code
 
-This editor provides both a command-line interface (CLI) and a graphical user interface (GUI)
-for editing save game files from the 1989 MS-DOS game "Sentinel Worlds I: Future Magic".
+This editor modifies save game files from the 1989 MS-DOS game "Sentinel Worlds I: Future Magic".
 
-The editor can modify:
+**Two implementations available:**
+- **macOS Native (Swift/SwiftUI)** - Native macOS application with modern UI
+- **Python (Cross-platform)** - CLI and Tkinter GUI for macOS/Linux/Windows
+
+Both versions can modify:
 - Party cash and light energy
 - Individual character stats, abilities, and inventory
 - Ship software levels
+- Crew member portraits (8 character faces)
+
+---
+
+## macOS Native Version (Swift/SwiftUI)
+
+**Requirements:** macOS 13.0 (Ventura) or later
+
+The native macOS application provides a modern SwiftUI interface with full feature parity to the Python version.
+
+**Building from source:**
+```bash
+# Open the Xcode project
+open SentinelWorldsEditor/SentinelWorldsEditor.xcodeproj
+
+# Build and run in Xcode (Cmd+R)
+# Or build from command line:
+xcodebuild -project SentinelWorldsEditor/SentinelWorldsEditor.xcodeproj \
+           -scheme SentinelWorldsEditor \
+           -configuration Release
+```
+
+**Features:**
+- Native macOS performance and look-and-feel
+- Tree-based navigation with master-detail layout
+- Real-time validation with visual feedback
+- Full undo/redo support (Cmd+Z / Cmd+Shift+Z)
+- Unsaved changes warnings
+- Equipment selection via dropdown menus
+- Keyboard shortcuts (Cmd+O, Cmd+S, Cmd+W, Cmd+Q)
+- 37 unit tests for binary I/O and data validation
+
+The compiled app can be found in Xcode's DerivedData folder after building.
+
+---
+
+## Python Version (Cross-Platform)
+
+**Requirements:** Python 3.10 or later
+
+The Python version provides both a command-line interface and a Tkinter-based GUI that works on macOS, Linux, and Windows.
 
 ### Installation
 
@@ -40,7 +84,7 @@ python3 src/main.py path/to/gamea.fm
 python3 src/gui.py
 ```
 
-### Usage
+### Python Usage
 
 You need to provide your own Sentinel Worlds I save game files (gameX.fm where X = A-Z).
 
@@ -94,13 +138,15 @@ Then enter the path when prompted, or just press Enter to use the default locati
 
 **Note:** The directory containing your save file must be writable for backups and saving.
 
-### Uninstallation
+### Python Uninstallation
 
-If you installed with pip:
+If you installed the Python version with pip:
 ```bash
 pip uninstall sentinel-worlds-editor
 ```
 
-### License
-This project is licensed under the terms of the GNU General Public License
-v3.0. See the LICENSE file for details.
+---
+
+## License
+
+Both the Swift and Python implementations are licensed under the GNU General Public License v3.0 or later. See the LICENSE file for details.

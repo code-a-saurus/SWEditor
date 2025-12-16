@@ -126,3 +126,4 @@
 ## What to do next:
 - Testing and polish for GUI version
 - Consider adding more user-friendly features (drag-and-drop file opening, recent files menu, etc.)
+---

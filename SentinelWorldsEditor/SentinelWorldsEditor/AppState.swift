@@ -1,0 +1,86 @@
+//
+// AppState.swift
+// Sentinel Worlds I: Future Magic Save Game Editor
+//
+// Copyright (C) 2025 Lee Hutchinson (lee@bigdinosaur.org)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
+
+import SwiftUI
+import Combine
+
+/// Shared application state accessible from both ContentView and AppDelegate
+class AppState: ObservableObject {
+    @Published var saveGame: SaveGame = SaveGame()
+    @Published var showGPLLicense = false
+
+    /// Flag to bypass the unsaved changes check (used when user chooses "Don't Save")
+    var shouldTerminateWithoutSaving = false
+
+    /// Published property to determine if Save menu item should be enabled
+    /// This is updated whenever saveGame changes to trigger menu updates
+    @Published var canSave: Bool = false
+
+    /// Global undo manager for all edits
+    let undoManager = UndoManager()
+
+    /// Published properties for undo/redo menu state
+    @Published var canUndo: Bool = false
+    @Published var canRedo: Bool = false
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        // Forward saveGame's objectWillChange to our own objectWillChange
+        // This ensures menu commands update when saveGame properties change
+        saveGame.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateCanSave()
+            }
+            .store(in: &cancellables)
+
+        // Update undo/redo state when undo manager changes
+        NotificationCenter.default.publisher(for: .NSUndoManagerDidUndoChange, object: undoManager)
+            .merge(with: NotificationCenter.default.publisher(for: .NSUndoManagerDidRedoChange, object: undoManager))
+            .merge(with: NotificationCenter.default.publisher(for: .NSUndoManagerDidCloseUndoGroup, object: undoManager))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateUndoRedoState()
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Updates the canSave property based on current saveGame state
+    /// This is @Published so it will automatically trigger objectWillChange
+    private func updateCanSave() {
+        let newValue = saveGame.fileURL != nil && saveGame.hasUnsavedChanges
+        if canSave != newValue {
+            canSave = newValue
+        }
+    }
+
+    /// Updates the undo/redo state based on UndoManager
+    private func updateUndoRedoState() {
+        canUndo = undoManager.canUndo
+        canRedo = undoManager.canRedo
+    }
+
+    /// Clears all undo/redo history (called when loading a new file)
+    func clearUndoHistory() {
+        undoManager.removeAllActions()
+        updateUndoRedoState()
+    }
+}

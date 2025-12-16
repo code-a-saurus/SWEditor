@@ -19,3 +19,21 @@ build/
 
 # Sentinel Worlds saves
 test_data/
+
+# Xcode
+SentinelWorldsEditor/build/
+SentinelWorldsEditor/DerivedData/
+SentinelWorldsEditor/*.xcodeproj/xcuserdata/
+SentinelWorldsEditor/*.xcodeproj/project.xcworkspace/xcuserdata/
+SentinelWorldsEditor/*.xcworkspace/xcuserdata/
+*.swp
+*.swiftpm
+.swiftpm/
+
+# Xcode - User-specific scheme files
+SentinelWorldsEditor/*.xcodeproj/xcshareddata/xcschemes/*.xcscheme
+
+# Build artifacts
+*.ipa
+*.dSYM.zip
+*.dSYM
