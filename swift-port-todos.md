@@ -47,6 +47,7 @@ This is a **native macOS SwiftUI port** of the Sentinel Worlds I save game edito
 - ✅ 37 unit tests passing (19 BinaryFileIO + 18 Constants)
 - ✅ GPL-3.0 license headers on all files
 - ✅ All features functional
+- ✅ Portrait infrastructure complete (data model, I/O, constants)
 
 ---
 
@@ -54,16 +55,26 @@ This is a **native macOS SwiftUI port** of the Sentinel Worlds I save game edito
 
 ### High Priority
 
-- [ ] **Add crew portrait display** - Show character portrait image for selected crew member
-  - Display portrait in editor area when crew member is selected
-  - Source images already included in Xcode project's Assets.xcassets "CrewPortraits" folder, 8 total, swp1 thru swp8
-  - Consider showing in HP editor or dedicated portrait section
+- [x] **Portrait Infrastructure (Completed 2025-12-15)**
+  - ✅ Added portrait hex addresses to SaveFileConstants (0x240, 0x300, 0x3C0, 0x480, 0x540)
+  - ✅ Created PortraitConstants.swift with 8 portraits, nicknames, and helper functions
+  - ✅ Added portrait property to CrewMember model and OriginalCrewMember
+  - ✅ Updated SaveFileService to read/write portrait values from save files
+  - ⚠️ **NEXT STEP:** Add PortraitConstants.swift to Xcode project (File > Add Files)
+
+- [ ] **Crew Portrait Display & Editor** - Implement portrait UI
+  - Display portrait image for selected crew member in editor area
+  - Add portrait picker dropdown (8 options: Mike, Bluehair, Burke, Roger, Allison, TJ, Casey, Glasses)
+  - Support undo/redo for portrait changes
+  - Show original portrait value indicator
+  - Portrait images: p01-p08 in Assets.xcassets "CrewPortraits" folder
+  - Consider placement: HP editor section or dedicated portrait editor
 
 ### Medium Priority
 
 - [ ] Manual testing with all user save files
-- [ ] User documentation for Swift version
-- [ ] Update main README.md to reference Swift native app
+- [x] User documentation for Swift version
+- [x] Update main README.md to reference Swift native app (v0.7 for both versions)
 - [ ] Code signing for distribution
 
 ### Low Priority
@@ -88,8 +99,8 @@ This is a **native macOS SwiftUI port** of the Sentinel Worlds I save game edito
 **Inspector Tool:** `./venv/bin/python3 tests/test_inspector.py` displays all save values
 **Python Version:** Still available at `src/main.py` (CLI) and `src/gui.py` (Tkinter GUI)
 
-**Architecture:** ~25 Swift files, ~2,500 lines of code
+**Architecture:** ~26 Swift files, ~2,600 lines of code
 - Models/ - SaveGame, Party, Ship, CrewMember data structures
-- Constants/ - Hex addresses (SaveFileConstants), item definitions (ItemConstants)
+- Constants/ - Hex addresses (SaveFileConstants), item definitions (ItemConstants), portrait mappings (PortraitConstants)
 - Services/ - BinaryFileIO, SaveFileValidator, SaveFileService
 - Views/ - ContentView, 8 editors, navigation components
